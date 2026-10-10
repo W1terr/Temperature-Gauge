@@ -289,12 +289,29 @@ namespace UI
 			}
 		}
 
+		// ImGui fills (and anti-aliases) polygons whose points go clockwise on screen; the other way round its concave
+		// fill closes the dart's notch (a blunt triangle when the arrow sat on the other side of the gauge)
+		template <std::size_t N>
+		void MakeClockwise(std::array<ImVec2, N>& a_points)
+		{
+			float area = 0.0f;
+			for (std::size_t i = 0; i < N; ++i) {
+				const auto& a = a_points[i];
+				const auto& b = a_points[(i + 1) % N];
+				area += a.x * b.y - b.x * a.y;
+			}
+			if (area < 0.0f) {
+				std::ranges::reverse(a_points);
+			}
+		}
+
 		// Crimson Desert's arrowhead: a notched dart with its tip at a_tip, its body along a_out (pointing back at the gauge)
 		void Dart(ImDrawList* a_list, ImVec2 a_tip, ImVec2 a_out, ImVec2 a_side, float a_length, ImU32 a_fill, ImU32 a_outline, float a_border)
 		{
-			const float                 width = a_length * 0.8f;
-			const std::array<ImVec2, 4> pts{ a_tip, a_tip + a_out * a_length + a_side * width, a_tip + a_out * (a_length * 0.55f),
+			const float           width = a_length * 0.8f;
+			std::array<ImVec2, 4> pts{ a_tip, a_tip + a_out * a_length + a_side * width, a_tip + a_out * (a_length * 0.55f),
 				a_tip + a_out * a_length - a_side * width };
+			MakeClockwise(pts);
 			if (a_border > 0.0f) {
 				ImDrawListManager::AddPolyline(a_list, pts.data(), 4, a_outline, ImDrawFlags_Closed, a_border * 2.0f);
 			}
@@ -418,10 +435,12 @@ namespace UI
 				const ImVec2 t = shape.Tangent(u);
 				const ImVec2 tip = c + m * (edge + 1.0f * px);
 				const ImVec2 base = tip + m * (arrow * 0.6f);
-				const float  w = arrow * 0.35f;
-				ImDrawListManager::AddTriangleFilled(list, tip, base + t * w, base - t * w, ToU32(s.targetColor, a_alpha * 0.3f));
-				ImDrawListManager::AddTriangle(list, tip, base + t * w, base - t * w, outline, 3.0f * px);
-				ImDrawListManager::AddTriangle(list, tip, base + t * w, base - t * w, ToU32(s.targetColor, a_alpha), 1.4f * px);
+				const float           w = arrow * 0.35f;
+				std::array<ImVec2, 3> tri{ tip, base + t * w, base - t * w };
+				MakeClockwise(tri);
+				ImDrawListManager::AddTriangleFilled(list, tri[0], tri[1], tri[2], ToU32(s.targetColor, a_alpha * 0.3f));
+				ImDrawListManager::AddTriangle(list, tri[0], tri[1], tri[2], outline, 3.0f * px);
+				ImDrawListManager::AddTriangle(list, tri[0], tri[1], tri[2], ToU32(s.targetColor, a_alpha), 1.4f * px);
 			}
 
 			const float  u = zones.U(state.body);
