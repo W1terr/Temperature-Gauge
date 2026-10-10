@@ -18,24 +18,6 @@ pages. It replaces the survival mod's own temperature icon (Survival Mode's comp
 - SKSE Menu Framework (3 or newer)
 - A supported survival mod: Survival Mode (Creation Club, built in) or SunHelm Survival (patch in the installer)
 
-## Supported survival mods
-
-Each survival mod is described by a json file in `SKSE/Plugins/TemperatureGauge/Sources` (format: top of
-`src/Sources.cpp`): the cold value and its stages, the area's temperature, the icon to hide. Survival Mode's comes with
-the mod (`res/core`), patches live in `res/patches/<name>` and become options in the FOMOD installer.
-
-## Translations
-
-`SKSE/Plugins/TemperatureGauge/lang/<language>.json` (`res/core/...`): the English text is the key. `tools/check_lang.py`
-reports missing or unused texts and broken placeholders; `--keys` prints a template for a new language.
-
-## Building
-
-`build.bat` (xmake, MSVC, CommonLibSSE-NG in `lib/commonlibsse-ng`), then `python tools/package.py <build dir> <output dir>`
-(FOMOD archive).
-
-Settings are saved to `Documents/My Games/Skyrim Special Edition/SKSE/TemperatureGauge.json`.
-
 ## Credits
 
 - Inspired by Crimson Desert's temperature gauge (Pearl Abyss)
