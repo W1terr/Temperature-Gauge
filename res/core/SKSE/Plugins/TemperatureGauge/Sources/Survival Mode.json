@@ -1,0 +1,30 @@
+{
+	"name": "Survival Mode",
+	"plugin": "ccQDRSSE001-SurvivalMode.esl",
+	"priority": 0,
+	"enabled": { "global": "0x826", "_": "Survival_ModeEnabled" },
+	"cold": { "global": "0x81B", "_": "Survival_ColdNeedValue" },
+	"max": { "global": "0x84B", "_": "Survival_ColdNeedMaxValue" },
+	"stages": [ 50, 120, 300, 500, 800 ],
+	"stageNames": [
+		{ "spell": "0x890", "fallback": "Warm" },
+		{ "spell": "0x86E", "fallback": "Comfortable" },
+		{ "spell": "0x891", "fallback": "Chilly" },
+		{ "spell": "0x86D", "fallback": "Very Cold" },
+		{ "spell": "0x870", "fallback": "Freezing" },
+		{ "spell": "0x871", "fallback": "Numb" }
+	],
+	"comfortableStages": 2,
+	"dangerStage": 4,
+	"temperatureLevel": { "global": "0x2EDD", "plugin": "Update.esm", "_": "Survival_TemperatureLevel" },
+	"target": {
+		"level": { "script": { "quest": "0x896", "script": "Survival_NeedCold", "variable": "::currentColdLevel_var" } },
+		"levelStages": [ 1, 4, 7, 10, 13 ]
+	},
+	"hide": {
+		"hudPaths": [
+			"_root.HUDMovieBaseInstance.TemperatureMeter_mc",
+			"_root.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass.CompassTemperatureHolderInstance"
+		]
+	}
+}

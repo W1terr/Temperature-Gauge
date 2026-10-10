@@ -1,0 +1,28 @@
+{
+	"name": "SunHelm Survival",
+	"description": "Shows SunHelm's cold (Warm .. Frigid) on the gauge and hides SunHelm's own cold widget. Needs SunHelm's cold need turned on in its MCM.",
+	"plugin": "SunHelmSurvival.esp",
+	"priority": 10,
+	"enabled": { "global": "0x79441D", "_": "_SHColdActive" },
+	"cold": { "global": "0x6A13C5", "_": "_SHCurrentColdLevel" },
+	"max": { "global": "0xA08085", "_": "_SHColdLevelCap (900)" },
+	"stages": [ 25, 150, 250, 450, 700 ],
+	"stageNames": [
+		{ "spell": "0x6E81DA", "fallback": "Warm" },
+		{ "spell": "0x6E81DB", "fallback": "Comfortable" },
+		{ "spell": "0x6E81DE", "fallback": "Chilly" },
+		{ "spell": "0x6E81E0", "fallback": "Cold" },
+		{ "spell": "0x6E81E2", "fallback": "Freezing" },
+		{ "spell": "0x6E81E4", "fallback": "Frigid" }
+	],
+	"comfortableStages": 2,
+	"dangerStage": 4,
+	"temperatureLevel": { "global": "0x6B57CE", "_": "_SHUITempLevel" },
+	"target": {
+		"value": { "global": "0x989757", "_": "_SHAmbientTemperature" },
+		"deadlyFrom": 600
+	},
+	"hide": {
+		"skyuiWidget": { "quest": "0x84F92D", "script": "_SHColdWidgetScript" }
+	}
+}

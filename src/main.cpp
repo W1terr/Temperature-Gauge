@@ -1,0 +1,31 @@
+#include "Menus.h"
+#include "Settings.h"
+#include "Temperature.h"
+#include "UI.h"
+
+namespace
+{
+	void OnMessage(SKSE::MessagingInterface::Message* a_msg)
+	{
+		if (a_msg->type != SKSE::MessagingInterface::kDataLoaded) {
+			return;
+		}
+		{
+			std::scoped_lock lock(Config::Lock());
+			Config::Load();
+		}
+		Temperature::Init();
+		Menus::Register();
+		if (!UI::Register()) {
+			RE::DebugMessageBox("Temperature Gauge needs SKSE Menu Framework (version 3 or newer). The gauge is disabled.");
+		}
+	}
+}
+
+SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
+{
+	SKSE::Init(a_skse);
+	logs::info("Temperature Gauge loading");
+	SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
+	return true;
+}
