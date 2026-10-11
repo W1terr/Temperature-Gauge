@@ -12,7 +12,7 @@
 	"General": "Generale",
 	"Show the gauge": "Mostra l'indicatore",
 	"Hide the vanilla temperature icon": "Nascondi l'icona della temperatura originale",
-	"Survival Mode's thermometer next to the compass, SunHelm's cold widget": "Il termometro della modalità Sopravvivenza accanto alla bussola, il widget del freddo di SunHelm",
+	"The survival mod's own temperature icon: Survival Mode's thermometer, SunHelm's cold widget, Frostfall's exposure meter": "L'icona della temperatura della mod di sopravvivenza: il termometro della modalità Sopravvivenza, il widget del freddo di SunHelm, l'indicatore di esposizione di Frostfall",
 	"Show": "Mostra",
 	"Hide after": "Nascondi dopo",
 	"How long you have to be warm or comfortable (and not getting colder) before the gauge fades out": "Quanto devi restare al caldo o a tuo agio (senza raffreddarti) prima che l'indicatore sparisca",
@@ -44,7 +44,7 @@
 	"Cold zone": "Zona fredda",
 	"Part of the gauge's length that is blue (cold end to comfortable)": "Parte della lunghezza dell'indicatore che è blu (dall'estremità fredda al comfort)",
 	"Hot zone": "Zona calda",
-	"Part that is red. The green comfortable zone gets the rest. Survival Mode and SunHelm have no overheating, so only other survival mods reach it": "Parte rossa. La zona verde di comfort prende il resto. La modalità Sopravvivenza e SunHelm non hanno surriscaldamento, quindi solo altre mod di sopravvivenza la raggiungono",
+	"Part that is red. The green comfortable zone gets the rest. The supported survival mods have no overheating, so nothing reaches it yet": "Parte rossa. La zona verde di comfort prende il resto. Le mod di sopravvivenza supportate non hanno surriscaldamento, quindi per ora nulla la raggiunge",
 	"Lines between the zones": "Linee tra le zone",
 	"Blend the zones": "Sfuma le zone",
 	"Marker": "Segnalino",
@@ -86,5 +86,11 @@
 	"Settings": "Impostazioni",
 	"Languages": "Lingue",
 	"If you see ? instead of letters: in SKSE Menu Framework open Options > Open Settings and set Character Glyphs to {}.": "Se vedi ? al posto delle lettere: in SKSE Menu Framework apri Options > Open Settings e imposta Character Glyphs su {}.",
-	"Freezing": "Congelato"
+	"Freezing": "Congelato",
+	"Warm": "Al caldo",
+	"Chilly": "Fresco",
+	"Very Cold": "Molto freddo",
+	"Numb": "Intorpidito",
+	"Freezing to Death": "In assideramento",
+	"Frigid": "Gelido"
 }

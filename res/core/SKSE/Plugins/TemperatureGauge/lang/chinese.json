@@ -12,7 +12,7 @@
 	"General": "一般",
 	"Show the gauge": "顯示量表",
 	"Hide the vanilla temperature icon": "隱藏原版溫度圖示",
-	"Survival Mode's thermometer next to the compass, SunHelm's cold widget": "生存模式在羅盤旁的溫度計、SunHelm 的寒冷小工具",
+	"The survival mod's own temperature icon: Survival Mode's thermometer, SunHelm's cold widget, Frostfall's exposure meter": "生存模組自己的溫度圖示：生存模式的溫度計、SunHelm 的寒冷小工具、Frostfall 的暴露量表",
 	"Show": "顯示",
 	"Hide after": "隱藏前等待",
 	"How long you have to be warm or comfortable (and not getting colder) before the gauge fades out": "量表淡出前，你需要保持溫暖或舒適（且沒有變冷）的時間",
@@ -44,7 +44,7 @@
 	"Cold zone": "寒冷區",
 	"Part of the gauge's length that is blue (cold end to comfortable)": "量表長度中藍色的比例（從冷端到舒適）",
 	"Hot zone": "炎熱區",
-	"Part that is red. The green comfortable zone gets the rest. Survival Mode and SunHelm have no overheating, so only other survival mods reach it": "紅色的比例。其餘為綠色舒適區。生存模式與 SunHelm 沒有過熱，只有其他生存模組會到達這裡",
+	"Part that is red. The green comfortable zone gets the rest. The supported survival mods have no overheating, so nothing reaches it yet": "紅色的比例。其餘為綠色舒適區。目前支援的生存模組都沒有過熱，所以還不會到達這裡",
 	"Lines between the zones": "區域間的分隔線",
 	"Blend the zones": "區域漸變",
 	"Marker": "標記",
@@ -86,5 +86,11 @@
 	"Settings": "設定",
 	"Languages": "語言",
 	"If you see ? instead of letters: in SKSE Menu Framework open Options > Open Settings and set Character Glyphs to {}.": "如果字母顯示為 ?：在 SKSE Menu Framework 中開啟 Options > Open Settings，將 Character Glyphs 設為 {}。",
-	"Freezing": "凍僵"
+	"Freezing": "凍僵",
+	"Warm": "溫暖",
+	"Chilly": "微寒",
+	"Very Cold": "非常寒冷",
+	"Numb": "麻木",
+	"Freezing to Death": "瀕臨凍死",
+	"Frigid": "酷寒"
 }

@@ -77,8 +77,9 @@ namespace UI
 			Text("%s", F("Reading from: {}", reading).c_str());
 			TextDisabled("%s", F("Supported here: {}", loaded.empty() ? T("none") : loaded.c_str()).c_str());
 			if (const auto r = Temperature::Current()) {
-				TextDisabled("%s", r->target ? F("Now: {}, gauge position {:.2f}, heading to {:.2f}", r->stage, r->body, *r->target).c_str() :
-				                               F("Now: {}, gauge position {:.2f}", r->stage, r->body).c_str());
+				const char* stage = T(r->stage.c_str());
+				TextDisabled("%s", r->target ? F("Now: {}, gauge position {:.2f}, heading to {:.2f}", stage, r->body, *r->target).c_str() :
+				                               F("Now: {}, gauge position {:.2f}", stage, r->body).c_str());
 			}
 		}
 
@@ -95,7 +96,7 @@ namespace UI
 			SeparatorText(T("General"));
 			Checkbox(Id("Show the gauge").c_str(), &s.enabled);
 			Checkbox(Id("Hide the vanilla temperature icon").c_str(), &s.hideVanillaIcon);
-			Hint("Survival Mode's thermometer next to the compass, SunHelm's cold widget");
+			Hint("The survival mod's own temperature icon: Survival Mode's thermometer, SunHelm's cold widget, Frostfall's exposure meter");
 			static constexpr std::array visibilityNames{ "Always", "Only when not comfortable", "Never" };
 			SetNextItemWidth(260.0f);
 			EnumCombo("Show", s.visibility, visibilityNames);
@@ -144,7 +145,7 @@ namespace UI
 			Hint("Part of the gauge's length that is blue (cold end to comfortable)");
 			s.hotZone = std::min(s.hotZone, 0.95f - s.coldZone);
 			SliderFloat(Id("Hot zone").c_str(), &s.hotZone, 0.0f, 0.95f - s.coldZone, "%.2f");
-			Hint("Part that is red. The green comfortable zone gets the rest. Survival Mode and SunHelm have no overheating, so only other survival mods reach it");
+			Hint("Part that is red. The green comfortable zone gets the rest. The supported survival mods have no overheating, so nothing reaches it yet");
 			Checkbox(Id("Lines between the zones").c_str(), &s.zoneLines);
 			SameLine();
 			Checkbox(Id("Blend the zones").c_str(), &s.blendZones);

@@ -1,7 +1,8 @@
 # Temperature Gauge
 
 A Crimson Desert style temperature gauge for Skyrim survival mods, drawn with SKSE Menu Framework and set up on its
-pages. It replaces the survival mod's own temperature icon (Survival Mode's compass thermometer, SunHelm's cold widget).
+pages. It replaces the survival mod's own temperature icon (Survival Mode's compass thermometer, SunHelm's cold widget,
+Frostfall's exposure meter).
 
 - Three zones like Crimson Desert: cold (blue shades), comfortable (green), hot (red shades), with thin lines between
   them and fading ends. Straight or bent into an arc of any angle, at any place, size and rotation; zone sizes and all
@@ -16,7 +17,8 @@ pages. It replaces the survival mod's own temperature icon (Survival Mode's comp
 
 - SKSE, Address Library for SKSE Plugins
 - SKSE Menu Framework (3 or newer)
-- A supported survival mod: Survival Mode (Creation Club, built in) or SunHelm Survival (patch in the installer)
+- A supported survival mod: Survival Mode (Creation Club, built in), SunHelm Survival or Frostfall (patches in the
+  installer)
 
 ## Credits
 

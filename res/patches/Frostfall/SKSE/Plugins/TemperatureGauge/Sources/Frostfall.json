@@ -1,0 +1,22 @@
+{
+	"name": "Frostfall",
+	"description": "Shows Frostfall's exposure (Warm .. Freezing to Death) on the gauge and hides Frostfall's exposure meter (the wetness meter stays). Needs Frostfall running with exposure turned on.",
+	"plugin": "Frostfall.esp",
+	"priority": 10,
+	"enabled": [
+		{ "global": "0x06DCFB", "atLeast": 2, "_": "FrostfallRunning (1 = stopped, 2 = running)" },
+		{ "global": "0x068113", "atLeast": 2, "_": "_Frost_Setting_ExposureOn (1 = off, 2 = on)" }
+	],
+	"cold": { "global": "0x00183D", "_": "_Frost_AttributeExposure" },
+	"max": 120,
+	"stages": [ 20, 40, 60, 80, 100 ],
+	"stageNames": [ "Warm", "Comfortable", "Chilly", "Very Cold", "Freezing", "Freezing to Death" ],
+	"comfortableStages": 2,
+	"dangerStage": 4,
+	"target": { "value": { "global": "0x0805E4", "_": "_Frost_ExposureTarget" } },
+	"nearHeat": { "global": "0x064AFD", "atLeast": 2, "_": "_Frost_NearFire (1 = no, 2 = yes)" },
+	"trend": { "steadyWithin": 1, "fastFrom": 40 },
+	"hide": {
+		"skyuiWidget": { "quest": "0x05CDFD", "script": "_Frost_Meter", "_": "_Frost_ExposureMeterQuest" }
+	}
+}

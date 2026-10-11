@@ -6,7 +6,7 @@
 //   "name": "SunHelm Survival",
 //   "plugin": "SunHelmSurvival.esp",          forms are local IDs in this plugin unless a value names its own "plugin"
 //   "priority": 10,                           with several mods running, the highest priority is shown
-//   "enabled": { "global": "0x79441D" },      > 0 = the mod's cold system is on (left out: always on)
+//   "enabled": { "global": "0x79441D" },      the mod's cold system is on (left out: always on); a list = all of them
 //   "cold": { "global": "0x6A13C5" },         the cold need: 0 = warm .. "max" = deadly
 //   "max": { "global": "0xA08085" },          or a number
 //   "stages": [25, 150, 250, 450, 700],       cold where stage 1, 2, ... begins
@@ -16,6 +16,9 @@
 //   "positions": [ ... ],                     optional, gauge scale at cold 0, each stage start and max
 //   "temperatureLevel": { "global": "..." },  the vanilla icon's state: 0 neutral, 1 near heat, 2 warming up,
 //                                             3 getting colder, 4 freezing area
+//   "nearHeat": { "global": "..." },          without "temperatureLevel": the warming up / cooling down chevrons come
+//   "trend": { "steadyWithin": 1, "fastFrom": 40 }   from the target vs the cold (cold units; two chevrons from
+//                                             "fastFrom" on when getting colder, near heat when warming up)
 //   "target": { "value": { "global": "..." }, "deadlyFrom": 600 }      the cold the area brings you to
 //          or { "level": { "script": { ... } }, "levelStages": [1, 4, 7, 10, 13] }
 //                                             a cold level; reaching levelStages[i] lets the cold go up to stage i + 1
@@ -23,7 +26,8 @@
 // }
 //
 // A value is a number, { "global": "<id>" } or { "script": { "quest": "<id>", "script": "<class>", "variable": "<name>" } }
-// (auto properties: "::<name>_var"); any of them can add "plugin".
+// (auto properties: "::<name>_var"); any of them can add "plugin". As a condition (enabled, nearHeat) it holds when
+// > 0, or >= "atLeast" if given (Frostfall's switches are 1 = off, 2 = on).
 namespace Temperature
 {
 	namespace
@@ -70,6 +74,7 @@ namespace Temperature
 			RE::TESQuest*        quest{ nullptr };
 			std::string          script;
 			RE::BSFixedString    variable;
+			std::optional<float> atLeast;  // as a condition
 
 			bool Valid() const { return constant || global || quest; }
 
@@ -94,6 +99,12 @@ namespace Temperature
 				}
 				return std::nullopt;
 			}
+
+			bool Holds() const
+			{
+				const auto v = Get();
+				return v && (atLeast ? *v >= *atLeast : *v > 0.0f);
+			}
 		};
 
 		Value ParseValue(const json& a_json, const std::string& a_plugin)
@@ -104,6 +115,9 @@ namespace Temperature
 				return value;
 			}
 			const auto plugin = a_json.value("plugin", a_plugin);
+			if (a_json.contains("atLeast")) {
+				value.atLeast = a_json["atLeast"].get<float>();
+			}
 			if (a_json.contains("global")) {
 				value.global = LookupForm<RE::TESGlobal>(a_json["global"], plugin);
 			} else if (a_json.contains("script")) {
@@ -141,7 +155,7 @@ namespace Temperature
 		{
 			std::string              name;
 			int                      priority{ 0 };
-			Value                    enabled;
+			std::vector<Value>       enabled;  // all of them hold = on
 			Value                    cold;
 			Value                    max;
 			Value                    temperatureLevel;
@@ -150,6 +164,10 @@ namespace Temperature
 			int                      comfortableStages{ 2 };
 			int                      dangerStage{ 4 };
 			std::vector<float>       positions;  // gauge scale at cold 0, each stage start, max
+
+			Value                    nearHeat;
+			float                    steadyWithin{ 0.0f };
+			float                    fastFrom{ 0.0f };
 
 			Value                    targetValue;
 			std::optional<float>     deadlyFrom;
@@ -163,11 +181,7 @@ namespace Temperature
 
 			bool On() const
 			{
-				if (!enabled.Valid()) {
-					return true;
-				}
-				const auto v = enabled.Get();
-				return v && *v > 0.0f;
+				return std::ranges::all_of(enabled, [](const Value& a_value) { return a_value.Holds(); });
 			}
 
 			float Max() const
@@ -227,7 +241,10 @@ namespace Temperature
 			logs::info("{} ({})", s.name, a_file.filename().string());
 			s.priority = j.value("priority", 0);
 			if (j.contains("enabled")) {
-				s.enabled = ParseValue(j["enabled"], plugin);
+				const auto& e = j["enabled"];
+				for (const auto& v : e.is_array() ? e : json::array({ e })) {
+					s.enabled.push_back(ParseValue(v, plugin));
+				}
 			}
 			s.cold = ParseValue(j.at("cold"), plugin);
 			if (!s.cold.Valid()) {
@@ -240,6 +257,9 @@ namespace Temperature
 			if (j.contains("temperatureLevel")) {
 				s.temperatureLevel = ParseValue(j["temperatureLevel"], plugin);
 			}
+			if (j.contains("nearHeat")) {
+				s.nearHeat = ParseValue(j["nearHeat"], plugin);
+			}
 			s.stages = j.value("stages", std::vector<float>{});
 			for (const auto& name : j.value("stageNames", json::array())) {
 				s.stageNames.push_back(StageName(name, plugin));
@@ -247,6 +267,9 @@ namespace Temperature
 			s.stageNames.resize(s.stages.size() + 1);
 			s.comfortableStages = j.value("comfortableStages", 2);
 			s.dangerStage = j.value("dangerStage", std::max(static_cast<int>(s.stages.size()) - 1, 1));
+			const auto trend = j.value("trend", json::object());
+			s.steadyWithin = trend.value("steadyWithin", 0.0f);
+			s.fastFrom = trend.value("fastFrom", 0.0f);
 			s.positions = j.value("positions", std::vector<float>{});
 			if (s.positions.size() != s.stages.size() + 2) {
 				s.positions = DefaultPositions(s.stages.size(), s.comfortableStages);
@@ -296,22 +319,39 @@ namespace Temperature
 			const float cold = std::clamp(a_source.cold.Get().value_or(0.0f), 0.0f, max);
 			const int   level = static_cast<int>(a_source.temperatureLevel.Get().value_or(0.0f));
 
-			Reading r;
-			r.body = a_source.Position(cold, max);
-			constexpr std::array kTrend{ 0, 2, 1, -1, -2 };
-			r.trend = level >= 0 && level < 5 ? kTrend[level] : 0;
-			if (level == 1) {  // near a heat source: warming up all the way
-				r.target = a_source.Position(0.0f, max);
+			const bool  byLevel = a_source.temperatureLevel.Valid();
+
+			// the cold the body is heading to
+			std::optional<float> target;
+			if (byLevel && level == 1) {  // near a heat source: warming up all the way
+				target = 0.0f;
 			} else if (a_source.targetValue.Valid()) {
 				if (auto v = a_source.targetValue.Get()) {
 					if (a_source.deadlyFrom && *v >= *a_source.deadlyFrom) {
 						*v = max;
 					}
-					r.target = a_source.Position(std::clamp(*v, 0.0f, max), max);
+					target = std::clamp(*v, 0.0f, max);
 				}
 			} else if (a_source.targetLevel.Valid()) {
 				if (const auto v = a_source.targetLevel.Get()) {
-					r.target = a_source.Position(StageCeiling(a_source, *v, max), max);
+					target = StageCeiling(a_source, *v, max);
+				}
+			}
+
+			Reading r;
+			r.body = a_source.Position(cold, max);
+			if (target) {
+				r.target = a_source.Position(*target, max);
+			}
+			if (byLevel) {
+				constexpr std::array kTrend{ 0, 2, 1, -1, -2 };
+				r.trend = level >= 0 && level < 5 ? kTrend[level] : 0;
+			} else if (target) {
+				const float diff = *target - cold;  // > 0: getting colder
+				if (diff > a_source.steadyWithin) {
+					r.trend = a_source.fastFrom > 0.0f && diff >= a_source.fastFrom ? -2 : -1;
+				} else if (diff < -a_source.steadyWithin) {
+					r.trend = a_source.nearHeat.Valid() && a_source.nearHeat.Holds() ? 2 : 1;
 				}
 			}
 			int stage = 0;

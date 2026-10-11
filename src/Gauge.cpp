@@ -485,8 +485,10 @@ namespace UI
 			}
 
 			if (s.showLabel && !a_reading.stage.empty()) {
-				const float  size = s.labelSize * px;
-				const auto   ts = TextSize(size, a_reading.stage);
+				// names from a definition file (Frostfall) have translations, spell names are in the game's language
+				const std::string stage = Lang::T(a_reading.stage.c_str());
+				const float       size = s.labelSize * px;
+				const auto        ts = TextSize(size, stage);
 				const ImVec2 p = c + labelDir * (reach + 4.0f * px);
 				ImVec2       pos;
 				if (labelDir.x > 0.35f) {
@@ -496,7 +498,7 @@ namespace UI
 				} else {
 					pos = { p.x - ts.x * 0.5f, labelDir.y > 0.0f ? p.y : p.y - ts.y };
 				}
-				Text(list, size, pos, a_reading.stage, ToU32(s.labelColor, a_alpha), ToU32(s.outlineColor, a_alpha * 0.9f));
+				Text(list, size, pos, stage, ToU32(s.labelColor, a_alpha), ToU32(s.outlineColor, a_alpha * 0.9f));
 			}
 		}
 	}

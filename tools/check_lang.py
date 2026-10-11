@@ -41,6 +41,12 @@ def code_keys() -> list[str]:
         for m in re.finditer(r"Lang::T\(([^;]*)\);", src):
             for lit in re.findall(LITERAL, m.group(1)):
                 add(json.loads(lit))
+    # survival mod definitions: stage names written as text and the fallbacks of spell names
+    for path in sorted((ROOT / "res").rglob("Sources/*.json")):
+        for name in json.loads(path.read_text(encoding="utf-8")).get("stageNames", []):
+            text = name if isinstance(name, str) else name.get("fallback")
+            if text:
+                add(text)
     return keys
 
 
