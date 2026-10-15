@@ -6,8 +6,9 @@ namespace Config
 {
 	namespace
 	{
-		// settings file versions: 2 = 1.1, the Crimson Desert look (1.0 files are ignored); 3 = 1.2, markers Arrow / Line
-		constexpr int kVersion = 3;
+		// settings file versions: 2 = 1.1, the Crimson Desert look (1.0 files are ignored); 3 = 1.2, markers Arrow / Line;
+		// 4 = 1.5, the needs arcs as one line in orange / blue / brown
+		constexpr int kVersion = 4;
 
 		Settings   settings;
 		std::mutex lock;
@@ -62,6 +63,42 @@ namespace Config
 			a_fn("markerColor", a_s.markerColor);
 			a_fn("targetColor", a_s.targetColor);
 			a_fn("labelColor", a_s.labelColor);
+
+			auto& n = a_s.needs;
+			a_fn("needsEnabled", n.enabled);
+			a_fn("needsVisibility", n.visibility);
+			a_fn("needsHideDelay", n.hideDelay);
+			a_fn("needsShow", n.show);
+			a_fn("needsStyle", n.style);
+			a_fn("needsColumn", n.column);
+			a_fn("needsPosX", n.posX);
+			a_fn("needsPosY", n.posY);
+			a_fn("needsSize", n.size);
+			a_fn("needsSpacing", n.spacing);
+			a_fn("needsThickness", n.thickness);
+			a_fn("needsBarLength", n.barLength);
+			a_fn("needsBarCurve", n.barCurve);
+			a_fn("needsArcRadius", n.arcRadius);
+			a_fn("needsArcStart", n.arcStart);
+			a_fn("needsArcSpan", n.arcSpan);
+			a_fn("needsArcGap", n.arcGap);
+			a_fn("needsArcReverse", n.arcReverse);
+			a_fn("needsArcFlip", n.arcFlip);
+			a_fn("needsMarker", n.marker);
+			a_fn("needsColorByNeed", n.colorByNeed);
+			a_fn("needsFadeEnds", n.fadeEnds);
+			a_fn("needColors", n.needColors);
+			a_fn("needsIcons", n.icons);
+			a_fn("needsTicks", n.ticks);
+			a_fn("needsPulseDanger", n.pulseDanger);
+			a_fn("needsShowLabel", n.showLabel);
+			a_fn("needsLabelSize", n.labelSize);
+			a_fn("needFine", n.fine);
+			a_fn("needWarning", n.warning);
+			a_fn("needDanger", n.danger);
+			a_fn("needBonus", n.bonus);
+			a_fn("needTrack", n.track);
+			a_fn("needIcon", n.icon);
 		}
 
 		template <class T>
@@ -118,6 +155,24 @@ namespace Config
 			a_s.markerSize = std::clamp(a_s.markerSize, 0.25f, 4.0f);
 			a_s.labelSize = std::clamp(a_s.labelSize, 6.0f, 60.0f);
 			a_s.smoothing = std::clamp(a_s.smoothing, 0.0f, 5.0f);
+
+			auto& n = a_s.needs;
+			n.visibility = static_cast<Visibility>(std::clamp(static_cast<int>(n.visibility), 0, 1));
+			n.style = static_cast<NeedStyle>(std::clamp(static_cast<int>(n.style), 0, 2));
+			n.marker = static_cast<NeedMarker>(std::clamp(static_cast<int>(n.marker), 0, 2));
+			n.arcRadius = std::clamp(n.arcRadius, 10.0f, 1000.0f);
+			n.arcStart = std::clamp(n.arcStart, -360.0f, 360.0f);
+			n.arcSpan = std::clamp(n.arcSpan, -360.0f, 360.0f);
+			n.arcGap = std::clamp(n.arcGap, 0.0f, 90.0f);
+			n.hideDelay = std::clamp(n.hideDelay, 0.0f, 60.0f);
+			n.posX = std::clamp(n.posX, 0.0f, 1.0f);
+			n.posY = std::clamp(n.posY, 0.0f, 1.0f);
+			n.size = std::clamp(n.size, 8.0f, 200.0f);
+			n.spacing = std::clamp(n.spacing, -20.0f, 200.0f);
+			n.thickness = std::clamp(n.thickness, 1.0f, 30.0f);
+			n.barLength = std::clamp(n.barLength, 10.0f, 600.0f);
+			n.barCurve = std::clamp(n.barCurve, -180.0f, 180.0f);
+			n.labelSize = std::clamp(n.labelSize, 6.0f, 60.0f);
 		}
 	}
 
@@ -148,9 +203,15 @@ namespace Config
 				return;
 			}
 			Fields(settings, [&](const char* a_key, auto& a_value) { Read(j, a_key, a_value); });
-			if (version < kVersion) {
+			if (version < 3) {
 				// 1.1 had Crimson Desert (badge), Arrow and figure, Arrow, Line
 				settings.marker = j.value("marker", 0) == 3 ? MarkerStyle::kLine : MarkerStyle::kArrow;
+			}
+			if (version < 4) {
+				// 1.5 test builds: arcs had gaps and yellow / blue / purple; now one line, orange / blue / brown
+				const NeedsSettings defaults;
+				settings.needs.arcGap = defaults.arcGap;
+				settings.needs.needColors = defaults.needColors;
 			}
 			Clamp(settings);
 			lastSaved = Serialize(settings);
@@ -182,6 +243,13 @@ namespace Config
 	void Reset()
 	{
 		settings = Settings{};
+	}
+
+	void ResetNeeds()
+	{
+		const bool enabled = settings.needs.enabled;
+		settings.needs = NeedsSettings{};
+		settings.needs.enabled = enabled;
 	}
 
 	void Apply(Preset a_preset)

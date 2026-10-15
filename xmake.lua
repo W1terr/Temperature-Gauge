@@ -3,7 +3,7 @@ includes("lib/commonlibsse-ng")
 
 -- set project constants
 set_project("TemperatureGauge")
-set_version("1.4.0")
+set_version("2.0.0")
 set_license("GPL-3.0")
 set_languages("c++23")
 set_warnings("allextra")
@@ -15,11 +15,11 @@ add_requires("nlohmann_json")
 
 -- define targets
 target("TemperatureGauge")
-    set_version("1.4.0")
+    set_version("2.0.0")
     add_rules("commonlibsse-ng.plugin", {
         name = "TemperatureGauge",
         author = "W1ter",
-        description = "Crimson Desert style temperature gauge for Survival Mode, configured through SKSE Menu Framework"
+        description = "Crimson Desert style temperature gauge (and hunger, thirst, fatigue gauges) for survival mods, configured through SKSE Menu Framework"
     })
 
     add_packages("nlohmann_json")

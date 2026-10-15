@@ -1,6 +1,6 @@
 {
 	"name": "SunHelm Survival",
-	"description": "Shows SunHelm's cold (Warm .. Frigid) on the gauge and hides SunHelm's own cold widget. Needs SunHelm's cold need turned on in its MCM.",
+	"description": "Shows SunHelm's cold (Warm .. Frigid) on the gauge and hides SunHelm's own cold widget (needs SunHelm's cold turned on in its MCM). Also gives the optional hunger, thirst and fatigue gauges SunHelm's needs, and hides SunHelm's need icons while they are on.",
 	"plugin": "SunHelmSurvival.esp",
 	"priority": 10,
 	"enabled": { "global": "0x79441D", "_": "_SHColdActive" },

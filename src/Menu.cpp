@@ -1,6 +1,8 @@
 #include "Framework.h"
 #include "Gauge.h"
 #include "Lang.h"
+#include "Needs.h"
+#include "NeedsGauge.h"
 #include "Settings.h"
 #include "Temperature.h"
 #include "UI.h"
@@ -16,6 +18,7 @@ namespace UI
 		constexpr auto kSection = "Temperature Gauge";
 
 		Preview preview;
+		bool    arcHint{ false };  // "put them on the temperature gauge's circle" found it straight
 
 		bool IsFrameworkInstalled()
 		{
@@ -26,6 +29,7 @@ namespace UI
 		{
 			if (a_type == SKSEMenuFramework::Model::EventType::kCloseMenu) {
 				preview.enabled = false;
+				preview.needs = false;
 				std::scoped_lock lock(Config::Lock());
 				Config::Save();
 			}
@@ -207,6 +211,163 @@ namespace UI
 			TextDisabled("%s", T("Settings are saved when the menu closes."));
 		}
 
+		void RenderNeedsStatus()
+		{
+			const auto names = Needs::SourceNames();
+			const auto loaded = Needs::LoadedSources();
+			const auto readings = Needs::Current();
+			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue" };
+			for (std::size_t i = 0; i < kNeedCount; ++i) {
+				if (readings[i]) {
+					Text("%s", std::format("{}: {} ({}, {:.0f}%)", T(kNeedNames[i]), T(readings[i]->stage.c_str()), names[i], readings[i]->fill * 100.0f).c_str());
+				} else {
+					TextDisabled("%s", std::format("{}: {}", T(kNeedNames[i]), T("not tracked by a running survival mod")).c_str());
+				}
+			}
+			TextDisabled("%s", F("Supported here: {}", loaded.empty() ? T("none") : loaded.c_str()).c_str());
+		}
+
+		void __stdcall RenderNeeds()
+		{
+			std::scoped_lock lock(Config::Lock());
+			auto&            s = Config::Get();
+			auto&            n = s.needs;
+			const auto       pixels = T("%.0f px");
+
+			RenderNeedsStatus();
+			TextWrapped("%s", T("Gauges for hunger, thirst and fatigue next to the temperature gauge. Survival Mode has hunger and fatigue, SunHelm all three; Frostfall has none of its own, so with Frostfall they come from the needs mod you run beside it."));
+
+			SeparatorText(T("General"));
+			Checkbox(Id("Show hunger, thirst and fatigue gauges").c_str(), &n.enabled);
+			Hint("While on, SunHelm's own hunger, thirst and fatigue icons are hidden");
+			if (!n.enabled) {
+				return;
+			}
+			Checkbox(Id("Hunger").c_str(), &n.show[0]);
+			SameLine();
+			Checkbox(Id("Thirst").c_str(), &n.show[1]);
+			SameLine();
+			Checkbox(Id("Fatigue").c_str(), &n.show[2]);
+			static constexpr std::array needsVisibilityNames{ "Always", "Only when not comfortable" };
+			SetNextItemWidth(260.0f);
+			EnumCombo("Show", n.visibility, needsVisibilityNames);
+			if (n.visibility == Visibility::kNotComfortable) {
+				SliderFloat(Id("Hide after", "needsHideAfter").c_str(), &n.hideDelay, 0.0f, 30.0f, T("%.1f s"));
+				Hint("Each gauge fades out once its need has had no penalties for this long");
+			}
+			TextDisabled("%s", T("Opacity, fading with the HUD, smoothing, outline and scale are shared with the temperature gauge."));
+
+			SeparatorText(T("Layout"));
+			static constexpr std::array needStyleNames{ "Rings", "Bars", "Arcs" };
+			SetNextItemWidth(260.0f);
+			EnumCombo("Style", n.style, needStyleNames);
+			if (n.style == NeedStyle::kArc) {
+				if (Button(Id("Put them on the temperature gauge's circle").c_str())) {
+					if (!PlaceNeedsOnTemperatureCircle(s)) {
+						arcHint = true;
+					}
+				}
+				Hint("Same circle as the bent temperature gauge (e.g. around a minimap), on the other side of it");
+				if (arcHint) {
+					TextDisabled("%s", T("The temperature gauge is straight; give it a curve first."));
+				}
+				SliderFloat(Id("Center X").c_str(), &n.posX, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Center Y").c_str(), &n.posY, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Radius").c_str(), &n.arcRadius, 10.0f, 600.0f, pixels);
+				SliderFloat(Id("Start").c_str(), &n.arcStart, -180.0f, 360.0f, "%.0f\xC2\xB0");
+				Hint("Where the first arc begins: degrees clockwise from 12 o'clock");
+				SliderFloat(Id("Arc length").c_str(), &n.arcSpan, -180.0f, 180.0f, "%.0f\xC2\xB0");
+				Hint("Degrees each arc covers; below 0 they go counterclockwise");
+				SliderFloat(Id("Gap").c_str(), &n.arcGap, 0.0f, 45.0f, "%.0f\xC2\xB0");
+				Hint("0 = one line, the needs end to end");
+				Checkbox(Id("Other order").c_str(), &n.arcReverse);
+				SameLine();
+				Checkbox(Id("Full end at the other end").c_str(), &n.arcFlip);
+				SliderFloat(Id("Thickness", "needsThickness").c_str(), &n.thickness, 1.0f, 20.0f, T("%.1f px"));
+			} else {
+				Checkbox(Id("Stacked (a column)").c_str(), &n.column);
+				SliderFloat(Id("Position X", "needsPosX").c_str(), &n.posX, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Position Y", "needsPosY").c_str(), &n.posY, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Size", "needsSize").c_str(), &n.size, 8.0f, 120.0f, pixels);
+				SliderFloat(Id("Spacing").c_str(), &n.spacing, -10.0f, 100.0f, pixels);
+				SliderFloat(Id("Thickness", "needsThickness").c_str(), &n.thickness, 1.0f, 20.0f, T("%.1f px"));
+			}
+			if (n.style == NeedStyle::kBar) {
+				SliderFloat(Id("Bar length").c_str(), &n.barLength, 10.0f, 400.0f, pixels);
+				SliderFloat(Id("Curve", "needsCurve").c_str(), &n.barCurve, -180.0f, 180.0f, "%.0f\xC2\xB0");
+				Hint("0 = a straight bar; below 0 it bends the other way");
+			}
+			if (n.style != NeedStyle::kRing) {
+				static constexpr std::array needMarkerNames{ "Like the temperature gauge", "Arrow", "Line" };
+				SetNextItemWidth(260.0f);
+				EnumCombo("Marker", n.marker, needMarkerNames);
+				Checkbox(Id("Fade the ends", "needsFadeEnds").c_str(), &n.fadeEnds);
+				SameLine();
+			}
+			if (n.style != NeedStyle::kArc) {  // arcs have no icons, their colors tell them apart
+				Checkbox(Id("Icons").c_str(), &n.icons);
+				SameLine();
+			}
+			Checkbox(Id("Marks between the stages").c_str(), &n.ticks);
+			SameLine();
+			Checkbox(Id("Pulse at the worst stages").c_str(), &n.pulseDanger);
+			Checkbox(Id("Show the stage name", "needsShowLabel").c_str(), &n.showLabel);
+			if (n.showLabel) {
+				SliderFloat(Id("Text size", "needsTextSize").c_str(), &n.labelSize, 8.0f, 40.0f, pixels);
+			}
+
+			SeparatorText(T("Colors"));
+			const bool byNeed = n.style != NeedStyle::kRing && n.colorByNeed;
+			if (n.style != NeedStyle::kRing) {
+				Checkbox(Id("A color per need").c_str(), &n.colorByNeed);
+				Hint("Off: colored by stage like the temperature gauge's zones (its green and red shades, amber penalties, gold bonus)");
+			}
+			if (byNeed) {
+				Color("Hunger", "needColorHunger", n.needColors[0]);
+				SameLine();
+				Color("Thirst", "needColorThirst", n.needColors[1]);
+				SameLine();
+				Color("Fatigue", "needColorFatigue", n.needColors[2]);
+				SameLine();
+			} else {
+				if (n.style == NeedStyle::kRing) {
+					Color("Fine", "needFine", n.fine);
+					SameLine();
+				}
+				Color("Penalties", "needWarning", n.warning);
+				SameLine();
+				if (n.style == NeedStyle::kRing) {
+					Color("Worst stages", "needDanger", n.danger);
+					SameLine();
+				}
+				Color("Bonus", "needBonus", n.bonus);
+				Hint("Well Fed, Well Rested and the like");
+			}
+			if (n.style == NeedStyle::kRing) {
+				Color("Background", "needTrack", n.track);
+				SameLine();
+			}
+			if (n.style != NeedStyle::kArc) {
+				Color("Icons", "needIcon", n.icon);
+			}
+			if (n.style != NeedStyle::kRing) {
+				TextDisabled("%s", T("The marker's color and size, the outline and the round ends come from the Settings page."));
+			}
+
+			SeparatorText(T("Preview"));
+			Checkbox(Id("Try made up values").c_str(), &preview.needs);
+			if (preview.needs) {
+				SameLine();
+				Checkbox(Id("Sweep", "needsSweep").c_str(), &preview.needsSweep);
+			}
+
+			Spacing();
+			Separator();
+			if (Button(Id("Reset the needs gauges to the defaults").c_str())) {
+				Config::ResetNeeds();
+			}
+		}
+
 		void __stdcall RenderLanguages();
 
 		// The sidebar pages: English name (the translation key), page, name it has in the framework now
@@ -218,6 +379,7 @@ namespace UI
 		};
 		std::array pages{
 			SidebarPage{ "Settings", RenderSettings, {} },
+			SidebarPage{ "Needs", RenderNeeds, {} },
 			SidebarPage{ "Languages", RenderLanguages, {} },
 		};
 		std::atomic<bool> pageNamesOutdated{ false };

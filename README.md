@@ -10,6 +10,12 @@ Frostfall's exposure meter).
 - A white notched arrowhead (Crimson Desert) or a line marks your body temperature; chevrons show warming up /
   cooling down; the marker pulses when freezing. Optional: where your temperature is heading, the stage name.
 - Show always, or only when not comfortable; fades with the HUD (Immersive HUD); hidden in menus.
+- Optional hunger, thirst and fatigue gauges (Needs page): arcs on the temperature gauge's circle (one click puts them
+  on the other side of a minimap), bars drawn like the temperature gauge, or rings with an apple, a water drop and a
+  moon; a color per need or by stage, the temperature gauge's line or arrow marker, stage marks, pulsing at the worst
+  stages, stage names. Survival Mode has hunger and fatigue, SunHelm all three (its own need icons
+  are hidden while the gauges are on). Frostfall has no needs of its own; next to it the gauges read the needs mod you
+  run with it.
 - Menus in all the languages Skyrim ships with (English, French, German, Italian, Spanish, Polish, Russian, Japanese,
   Chinese), chosen on the Languages page.
 

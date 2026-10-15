@@ -1,5 +1,7 @@
 #include "Temperature.h"
 
+#include "Defs.h"
+
 // Survival mods described by json files (Data/SKSE/Plugins/TemperatureGauge/Sources/*.json):
 //
 // {
@@ -25,131 +27,14 @@
 //   "hide": { "hudPaths": [ "_root..." ], "skyuiWidget": { "quest": "0x84F92D", "script": "_SHColdWidgetScript" } }
 // }
 //
-// A value is a number, { "global": "<id>" } or { "script": { "quest": "<id>", "script": "<class>", "variable": "<name>" } }
-// (auto properties: "::<name>_var"); any of them can add "plugin". As a condition (enabled, nearHeat) it holds when
-// > 0, or >= "atLeast" if given (Frostfall's switches are 1 = off, 2 = on).
+// Values, conditions (enabled, nearHeat), stage names and the widget: see Defs.h.
 namespace Temperature
 {
 	namespace
 	{
+		using namespace Defs;
+
 		constexpr auto kFolder = "Data/SKSE/Plugins/TemperatureGauge/Sources";
-
-		RE::FormID ParseId(const json& a_value)
-		{
-			if (a_value.is_number_unsigned()) {
-				return a_value.get<RE::FormID>();
-			}
-			return static_cast<RE::FormID>(std::stoul(a_value.get<std::string>(), nullptr, 16));
-		}
-
-		template <class T>
-		T* LookupForm(const json& a_id, const std::string& a_plugin)
-		{
-			const auto form = RE::TESDataHandler::GetSingleton()->LookupForm<T>(ParseId(a_id) & 0xFFFFFF, a_plugin);
-			if (!form) {
-				logs::warn("  {} {} not found in {}", T::FORMTYPE, a_id.dump(), a_plugin);
-			}
-			return form;
-		}
-
-		RE::BSTSmartPointer<RE::BSScript::Object> ScriptObject(RE::TESQuest* a_quest, const std::string& a_class)
-		{
-			RE::BSTSmartPointer<RE::BSScript::Object> object;
-			const auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
-			const auto policy = vm ? vm->GetObjectHandlePolicy() : nullptr;
-			if (!a_quest || !policy) {
-				return object;
-			}
-			const auto handle = policy->GetHandleForObject(RE::TESQuest::FORMTYPE, a_quest);
-			if (handle != policy->EmptyHandle()) {
-				vm->FindBoundObject(handle, a_class.c_str(), object);
-			}
-			return object;
-		}
-
-		struct Value
-		{
-			std::optional<float> constant;
-			RE::TESGlobal*       global{ nullptr };
-			RE::TESQuest*        quest{ nullptr };
-			std::string          script;
-			RE::BSFixedString    variable;
-			std::optional<float> atLeast;  // as a condition
-
-			bool Valid() const { return constant || global || quest; }
-
-			// game thread
-			std::optional<float> Get() const
-			{
-				if (constant) {
-					return constant;
-				}
-				if (global) {
-					return global->value;
-				}
-				if (const auto object = ScriptObject(quest, script)) {
-					if (const auto v = object->GetVariable(variable)) {
-						if (v->IsInt()) {
-							return static_cast<float>(v->GetSInt());
-						}
-						if (v->IsFloat()) {
-							return v->GetFloat();
-						}
-					}
-				}
-				return std::nullopt;
-			}
-
-			bool Holds() const
-			{
-				const auto v = Get();
-				return v && (atLeast ? *v >= *atLeast : *v > 0.0f);
-			}
-		};
-
-		Value ParseValue(const json& a_json, const std::string& a_plugin)
-		{
-			Value value;
-			if (a_json.is_number()) {
-				value.constant = a_json.get<float>();
-				return value;
-			}
-			const auto plugin = a_json.value("plugin", a_plugin);
-			if (a_json.contains("atLeast")) {
-				value.atLeast = a_json["atLeast"].get<float>();
-			}
-			if (a_json.contains("global")) {
-				value.global = LookupForm<RE::TESGlobal>(a_json["global"], plugin);
-			} else if (a_json.contains("script")) {
-				const auto& s = a_json["script"];
-				value.quest = LookupForm<RE::TESQuest>(s.at("quest"), s.value("plugin", plugin));
-				value.script = s.at("script").get<std::string>();
-				value.variable = s.at("variable").get<std::string>();
-			}
-			return value;
-		}
-
-		// " Cold - Chilly" / "Cold: Chilly" -> "Chilly" (the stage spells' names, in the game's language)
-		std::string StageName(const json& a_json, const std::string& a_plugin)
-		{
-			if (a_json.is_string()) {
-				return a_json.get<std::string>();
-			}
-			const auto  fallback = a_json.value("fallback", ""s);
-			std::string name;
-			if (a_json.contains("spell")) {
-				if (const auto spell = LookupForm<RE::SpellItem>(a_json["spell"], a_json.value("plugin", a_plugin))) {
-					name = spell->GetFullName();
-				}
-			}
-			if (const auto cut = name.find_last_of("-:"); cut != std::string::npos) {
-				name = name.substr(cut + 1);
-			}
-			const auto first = name.find_first_not_of(' ');
-			const auto last = name.find_last_not_of(' ');
-			name = first == std::string::npos ? std::string{} : name.substr(first, last - first + 1);
-			return name.empty() ? fallback : name;
-		}
 
 		struct Source
 		{
@@ -175,14 +60,9 @@ namespace Temperature
 			std::vector<int>         levelStages;
 
 			std::vector<std::string> hudPaths;
-			RE::TESQuest*            widgetQuest{ nullptr };
-			std::string              widgetScript;
-			std::string              widgetRoot;  // read from the SkyUI widget script (SkyUI may move it after a load)
+			Widget                   widget;
 
-			bool On() const
-			{
-				return std::ranges::all_of(enabled, [](const Value& a_value) { return a_value.Holds(); });
-			}
+			bool On() const { return AllHold(enabled); }
 
 			float Max() const
 			{
@@ -240,12 +120,7 @@ namespace Temperature
 			}
 			logs::info("{} ({})", s.name, a_file.filename().string());
 			s.priority = j.value("priority", 0);
-			if (j.contains("enabled")) {
-				const auto& e = j["enabled"];
-				for (const auto& v : e.is_array() ? e : json::array({ e })) {
-					s.enabled.push_back(ParseValue(v, plugin));
-				}
-			}
+			s.enabled = ParseConditions(j, "enabled", plugin);
 			s.cold = ParseValue(j.at("cold"), plugin);
 			if (!s.cold.Valid()) {
 				logs::warn("  no cold value, skipped");
@@ -290,9 +165,7 @@ namespace Temperature
 				const auto& h = j["hide"];
 				s.hudPaths = h.value("hudPaths", std::vector<std::string>{});
 				if (h.contains("skyuiWidget")) {
-					const auto& w = h["skyuiWidget"];
-					s.widgetQuest = LookupForm<RE::TESQuest>(w.at("quest"), w.value("plugin", plugin));
-					s.widgetScript = w.at("script").get<std::string>();
+					s.widget = ParseWidget(h["skyuiWidget"], plugin);
 				}
 			}
 			std::string names;
@@ -393,20 +266,12 @@ namespace Temperature
 		std::string              name;
 		std::vector<std::string> paths;
 		for (auto& source : sources) {
-			if (source.widgetQuest) {
-				// SKI_WidgetBase keeps its HUD path ("_root.WidgetContainer.<id>.widget") once SkyUI loaded it
-				if (const auto object = ScriptObject(source.widgetQuest, source.widgetScript)) {
-					static const RE::BSFixedString rootName{ "_widgetRoot" };
-					const auto v = object->GetVariable(rootName);
-					if (v && v->IsString() && !v->GetString().empty() && v->GetString() != source.widgetRoot) {
-						source.widgetRoot = v->GetString();
-						logs::info("{}: its widget is {}", source.name, source.widgetRoot);
-					}
-				}
+			if (source.widget.Valid()) {
+				source.widget.Refresh(source.name);
 			}
 			paths.insert(paths.end(), source.hudPaths.begin(), source.hudPaths.end());
-			if (!source.widgetRoot.empty()) {
-				paths.push_back(source.widgetRoot);
+			if (!source.widget.root.empty()) {
+				paths.push_back(source.widget.root);
 			}
 			if (!reading && source.On()) {
 				reading = Read(source);

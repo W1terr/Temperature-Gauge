@@ -20,6 +20,9 @@ namespace UI
 		float target{ -0.5f };
 		int   trend{ -1 };
 		bool  sweep{ false };    // move the marker up and down by itself
+
+		bool  needs{ false };      // the needs gauges show made up values
+		bool  needsSweep{ true };  // ... going round
 	};
 	Preview& GetPreview();
 }

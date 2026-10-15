@@ -1,0 +1,42 @@
+{
+	"name": "Survival Mode",
+	"plugin": "ccQDRSSE001-SurvivalMode.esl",
+	"priority": 0,
+	"enabled": { "global": "0x826", "_": "Survival_ModeEnabled" },
+	"hunger": {
+		"value": { "global": "0x81A", "_": "Survival_HungerNeedValue" },
+		"max": { "global": "0x80C", "_": "Survival_HungerNeedMaxValue" },
+		"stages": [ 160, 340, 520, 770 ],
+		"stageNames": [
+			{ "spell": "0x87E", "fallback": "Satisfied" },
+			{ "spell": "0x880", "fallback": "Peckish" },
+			{ "spell": "0x881", "fallback": "Hungry" },
+			{ "spell": "0x886", "fallback": "Famished" },
+			{ "spell": "0x885", "fallback": "Starving" }
+		],
+		"comfortableStages": 1,
+		"dangerStage": 3,
+		"bonus": {
+			"when": { "script": { "quest": "0x894", "script": "Survival_NeedHunger", "variable": "::hasBonus_var" } },
+			"name": { "spell": "0x876", "fallback": "Well Fed" }
+		}
+	},
+	"fatigue": {
+		"value": { "global": "0x816", "_": "Survival_ExhaustionNeedValue" },
+		"max": { "global": "0x84A", "_": "Survival_ExhaustionNeedMaxValue" },
+		"stages": [ 160, 340, 560, 800 ],
+		"stageNames": [
+			{ "spell": "0x878", "fallback": "Refreshed" },
+			{ "spell": "0x879", "fallback": "Drained" },
+			{ "spell": "0x87A", "fallback": "Tired" },
+			{ "spell": "0x87B", "fallback": "Weary" },
+			{ "spell": "0x87D", "fallback": "Debilitated" }
+		],
+		"comfortableStages": 1,
+		"dangerStage": 3,
+		"bonus": {
+			"when": { "script": { "quest": "0x899", "script": "Survival_NeedExhaustion", "variable": "::hasBonus_var" } },
+			"name": { "spell": "0x0FB984", "plugin": "Skyrim.esm", "fallback": "Well Rested" }
+		}
+	}
+}

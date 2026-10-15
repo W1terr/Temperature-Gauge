@@ -1,7 +1,7 @@
 r"""Builds the FOMOD archive "Temperature Gauge <version>.zip". The version is the target's set_version in xmake.lua (a
 trailing ".0" is left out of the name).
 
-  00 Core      SKSE\Plugins\TemperatureGauge.dll + res\core (Survival Mode's definition)
+  00 Core      SKSE\Plugins\TemperatureGauge.dll + res\core (Survival Mode's definitions, translations)
   10 Patches   one option per folder in res\patches (survival mod definitions); the option's name is the folder name,
                its description and the plugin that makes it "Recommended" come from the json inside
 
@@ -28,8 +28,8 @@ def version(target: str) -> str:
 
 
 def patch_info(folder: Path) -> tuple[str, str]:
-    """description and plugin of a patch folder, from its source definition json"""
-    source = next(folder.rglob("*.json"))
+    """description and plugin of a patch folder, from its temperature definition (Sources), else any definition"""
+    source = next(folder.rglob("Sources/*.json"), None) or next(folder.rglob("*.json"))
     data = json.loads(source.read_text(encoding="utf-8"))
     return data.get("description", f"Support for {folder.name}."), data["plugin"]
 
@@ -85,7 +85,7 @@ def info(ver: str) -> str:
     <Name>Temperature Gauge</Name>
     <Author>W1ter</Author>
     <Version>{ver}</Version>
-    <Description>A Crimson Desert style temperature gauge for survival mods, set up in SKSE Menu Framework.</Description>
+    <Description>A Crimson Desert style temperature gauge for survival mods, with optional hunger, thirst and fatigue gauges, set up in SKSE Menu Framework.</Description>
     <Groups>
         <element>User Interface</element>
     </Groups>

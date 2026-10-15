@@ -2,7 +2,8 @@
 Checks the translations in res/core/SKSE/Plugins/TemperatureGauge/lang against the texts the code translates.
 
 The English texts are the keys: T("..."), F("..."), Id("..."), Hint("..."), Color("...", ...), EnumCombo("...", ...), the combo name lists
-(xxxNames{ ... }), the sidebar pages (SidebarPage{ "..." }), kGlyphHint and Lang::T(...) in Gauge.cpp.
+(xxxNames{ ... }), the sidebar pages (SidebarPage{ "..." }), kGlyphHint and Lang::T(...) in Gauge.cpp / NeedsGauge.cpp;
+stage names from the Sources and Needs definitions.
 Reports keys missing from a language file, keys the code no longer uses and broken {} placeholders.
 usage: python check_lang.py [--keys]   (--keys: print the keys as a json template)
 """
@@ -13,7 +14,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-SOURCES = [ROOT / "src" / name for name in ("Menu.cpp", "Gauge.cpp")]
+SOURCES = [ROOT / "src" / name for name in ("Menu.cpp", "Gauge.cpp", "NeedsGauge.cpp")]
 LANG_DIR = ROOT / "res" / "core" / "SKSE" / "Plugins" / "TemperatureGauge" / "lang"
 LANGUAGES = ["french", "german", "italian", "spanish", "polish", "russian", "japanese", "chinese"]
 
@@ -47,6 +48,17 @@ def code_keys() -> list[str]:
             text = name if isinstance(name, str) else name.get("fallback")
             if text:
                 add(text)
+    # needs definitions: the same for each need's stage names and its bonus name
+    for path in sorted((ROOT / "res").rglob("Needs/*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for need in ("hunger", "thirst", "fatigue"):
+            names = list(data.get(need, {}).get("stageNames", []))
+            if "name" in data.get(need, {}).get("bonus", {}):
+                names.append(data[need]["bonus"]["name"])
+            for name in names:
+                text = name if isinstance(name, str) else name.get("fallback")
+                if text:
+                    add(text)
     return keys
 
 

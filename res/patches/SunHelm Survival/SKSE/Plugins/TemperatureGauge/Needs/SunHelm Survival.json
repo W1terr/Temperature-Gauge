@@ -1,0 +1,60 @@
+{
+	"name": "SunHelm Survival",
+	"plugin": "SunHelmSurvival.esp",
+	"priority": 10,
+	"enabled": { "global": "0x02EB63", "_": "_SHEnabled" },
+	"hunger": {
+		"enabled": { "questRunning": "0x008EE8", "_": "_SHHungerQuest" },
+		"value": { "global": "0x00EAAE", "_": "_SHCurrentHungerLevel" },
+		"max": 360,
+		"stages": [ 40, 80, 140, 240, 360 ],
+		"stageNames": [
+			{ "spell": "0x001824", "fallback": "Well Fed" },
+			{ "spell": "0x001825", "fallback": "Satisfied" },
+			{ "spell": "0x001827", "fallback": "Peckish" },
+			{ "spell": "0x001829", "fallback": "Hungry" },
+			{ "spell": "0x00182B", "fallback": "Ravenous" },
+			{ "spell": "0x00182D", "fallback": "Starving" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonusStages": 1
+	},
+	"thirst": {
+		"enabled": { "questRunning": "0x05C470", "_": "_SHThirstQuest" },
+		"value": { "global": "0x05C472", "_": "_SHCurrentThirstLevel" },
+		"max": 300,
+		"stages": [ 40, 60, 120, 180, 300 ],
+		"stageNames": [
+			{ "spell": "0x01E850", "fallback": "Quenched" },
+			{ "spell": "0x05C47E", "fallback": "Sated" },
+			{ "spell": "0x05C47F", "fallback": "Thirsty" },
+			{ "spell": "0x05C481", "fallback": "Parched" },
+			{ "spell": "0x05C483", "fallback": "Dehydrated" },
+			{ "spell": "0x05C485", "fallback": "Severely Dehydrated" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonusStages": 1
+	},
+	"fatigue": {
+		"enabled": { "questRunning": "0x01E844", "_": "_SHFatigueQuest" },
+		"value": { "global": "0x021E3F", "_": "_SHCurrentFatigueLevel" },
+		"max": 480,
+		"stages": [ 80, 160, 240, 360, 480 ],
+		"stageNames": [
+			{ "spell": "0x01E846", "fallback": "Well Rested" },
+			{ "spell": "0x01E845", "fallback": "Rested" },
+			{ "spell": "0x01E848", "fallback": "Slightly Tired" },
+			{ "spell": "0x01E84A", "fallback": "Tired" },
+			{ "spell": "0x01E84C", "fallback": "Weary" },
+			{ "spell": "0x01E84E", "fallback": "Exhausted" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonusStages": 1
+	},
+	"hide": {
+		"skyuiWidget": { "quest": "0x12BDC1", "script": "_SHWidgetScript", "_": "_SHWidgetQuest (hunger, thirst, fatigue icons)" }
+	}
+}

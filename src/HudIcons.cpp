@@ -1,11 +1,10 @@
 #include "HudIcons.h"
 
-#include "Temperature.h"
-
 // The survival mods' own temperature icons live in the HUD movie:
 // - Survival Mode: HUDMovieBaseInstance.TemperatureMeter_mc (vanilla and Edge UI hudmenu.swf). The engine only moves
 //   it between its frames (Neutral / Fire / Warm / Cold / Freezing), so hiding the clip sticks.
-// - SkyUI widgets (SunHelm): _root.WidgetContainer.<id>.widget; the mod may show it again, so it's hidden every time.
+// - SkyUI widgets (SunHelm's cold widget and need icons, Frostfall's exposure meter): _root.WidgetContainer.<id>.widget;
+//   the mod may show it again, so it's hidden every time.
 namespace HudIcons
 {
 	namespace
@@ -40,7 +39,7 @@ namespace HudIcons
 			return true;
 		}
 
-		void Run(bool a_hide, const std::vector<std::string>& a_paths)
+		void Run(const std::vector<std::string>& a_hide)
 		{
 			pending = false;
 			const auto ui = RE::UI::GetSingleton();
@@ -54,34 +53,35 @@ namespace HudIcons
 			alpha = std::clamp(NumberOf(movie, "_root._alpha") / 100.0f, 0.0f, 1.0f) *
 			        std::clamp(NumberOf(movie, "_root.HUDMovieBaseInstance._alpha") / 100.0f, 0.0f, 1.0f);
 
-			if (!a_hide) {
-				for (const auto& path : hidden) {  // only give back what we took
-					SetVisible(movie, path, true);
-					logs::info("Showed the temperature icon {} again", path);
+			// only give back what we took
+			std::erase_if(hidden, [&](const std::string& a_path) {
+				if (std::ranges::find(a_hide, a_path) != a_hide.end()) {
+					return false;
 				}
-				hidden.clear();
-				return;
-			}
-			for (const auto& path : a_paths) {
+				SetVisible(movie, a_path, true);
+				logs::info("Showed the icon {} again", a_path);
+				return true;
+			});
+			for (const auto& path : a_hide) {
 				if (SetVisible(movie, path, false)) {
 					if (std::ranges::find(hidden, path) == hidden.end()) {
 						hidden.push_back(path);
-						logs::info("Hid the temperature icon {}", path);
+						logs::info("Hid the icon {}", path);
 					}
 				} else if (std::ranges::find(missing, path) == missing.end()) {
 					missing.push_back(path);
-					logs::info("No temperature icon at {} (yet)", path);
+					logs::info("No icon at {} (yet)", path);
 				}
 			}
 		}
 	}
 
-	void Update(bool a_hide)
+	void Update(std::vector<std::string> a_hide)
 	{
 		if (pending.exchange(true)) {
 			return;
 		}
-		SKSE::GetTaskInterface()->AddUITask([a_hide, paths = Temperature::IconPaths()] { Run(a_hide, paths); });
+		SKSE::GetTaskInterface()->AddUITask([paths = std::move(a_hide)] { Run(paths); });
 	}
 
 	float Alpha()
