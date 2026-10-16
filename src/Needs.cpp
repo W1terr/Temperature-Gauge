@@ -7,13 +7,14 @@
 // {
 //   "name": "SunHelm Survival",
 //   "plugin": "SunHelmSurvival.esp",          forms are local IDs in this plugin unless a value names its own "plugin"
+//   "replaces": "Survival Mode",              optional, definitions (by "name") left out while this one is loaded
 //   "priority": 10,                           with several mods running a need, the highest priority is shown
 //   "enabled": { "global": "0x02EB63" },      the mod runs (left out: always); a list = all of them
 //   "hunger": {                               also "thirst" and "fatigue"; a need left out isn't in the mod
 //     "enabled": { "questRunning": "0x008EE8" },   this need runs (left out: always)
 //     "value": { "global": "0x00EAAE" },      0 = fed / quenched / rested .. "max" = the worst
 //     "max": 360,                             or a value; left out: 1.25 x the last stage
-//     "stages": [40, 80, 140, 240, 360],      value where stage 1, 2, ... begins
+//     "stages": [40, 80, 140, 240, 360],      value where stage 1, 2, ... begins (numbers or values, e.g. globals)
 //     "stageNames": [ { "spell": "0x001824", "fallback": "Well Fed" }, ... ],   stage 0 .. N
 //     "comfortableStages": 2,                 stages 0 .. n-1 have no penalties
 //     "dangerStage": 4,                       from this stage on the gauge pulses (default: the second to last)
@@ -39,7 +40,7 @@ namespace Needs
 			std::vector<Value>       enabled;
 			Value                    value;
 			Value                    max;
-			std::vector<float>       stages;      // start of stage 1 .. N
+			std::vector<Value>       stages;      // start of stage 1 .. N
 			std::vector<std::string> stageNames;  // stage 0 .. N
 			int                      comfortableStages{ 1 };
 			int                      dangerStage{ 1 };
@@ -49,10 +50,10 @@ namespace Needs
 
 			bool On() const { return AllHold(enabled); }
 
-			float Max() const
+			float Max(const std::vector<float>& a_stages) const
 			{
 				const auto v = max.Get();
-				return v && *v > 0.0f ? *v : (stages.empty() ? 1000.0f : stages.back() * 1.25f);
+				return v && *v > 0.0f ? *v : (a_stages.empty() ? 1000.0f : a_stages.back() * 1.25f);
 			}
 		};
 
@@ -60,6 +61,7 @@ namespace Needs
 		{
 			std::string                                name;
 			int                                        priority{ 0 };
+			std::vector<std::string>                   replaces;
 			std::vector<Value>                         enabled;
 			std::array<std::optional<NeedDef>, kNeedCount> needs;
 			std::vector<std::string>                   hudPaths;
@@ -82,7 +84,7 @@ namespace Needs
 			if (a_json.contains("max")) {
 				n.max = ParseValue(a_json["max"], a_plugin);
 			}
-			n.stages = a_json.value("stages", std::vector<float>{});
+			n.stages = ParseStages(a_json, a_plugin);
 			for (const auto& name : a_json.value("stageNames", json::array())) {
 				n.stageNames.push_back(StageName(name, a_plugin));
 			}
@@ -111,6 +113,7 @@ namespace Needs
 			}
 			logs::info("{} needs ({})", s.name, a_file.filename().string());
 			s.priority = j.value("priority", 0);
+			s.replaces = ParseReplaces(j);
 			s.enabled = ParseConditions(j, "enabled", plugin);
 			for (std::size_t i = 0; i < kNeedCount; ++i) {
 				if (!j.contains(kKeys[i])) {
@@ -140,12 +143,13 @@ namespace Needs
 
 		NeedReading Read(const NeedDef& a_need)
 		{
-			const float max = a_need.Max();
+			const auto  stages = GetStages(a_need.stages);
+			const float max = a_need.Max(stages);
 			const float value = std::clamp(a_need.value.Get().value_or(0.0f), 0.0f, max);
 
 			// the gauge: one even share per stage, from 0 to max (a last stage that starts at max is only its end)
 			std::vector<float> bounds{ 0.0f };
-			for (const float stage : a_need.stages) {
+			for (const float stage : stages) {
 				if (stage > bounds.back() && stage < max) {
 					bounds.push_back(stage);
 				}
@@ -161,7 +165,7 @@ namespace Needs
 			}
 
 			int stage = 0;
-			while (stage < static_cast<int>(a_need.stages.size()) && value >= a_need.stages[stage]) {
+			while (stage < static_cast<int>(stages.size()) && value >= stages[stage]) {
 				++stage;
 			}
 			const bool bonusNow = a_need.bonusWhen.Valid() && a_need.bonusWhen.Holds();
@@ -171,7 +175,7 @@ namespace Needs
 			for (int j = 0; j < r.segments; ++j) {
 				// the stage the segment starts in
 				int k = 0;
-				while (k < static_cast<int>(a_need.stages.size()) && bounds[j] >= a_need.stages[k]) {
+				while (k < static_cast<int>(stages.size()) && bounds[j] >= stages[k]) {
 					++k;
 				}
 				r.zones[j] = k < a_need.bonusStages ? NeedZone::kBonus :
@@ -206,6 +210,7 @@ namespace Needs
 		if (ec) {
 			logs::error("Can't read {}: {}", kFolder, ec.message());
 		}
+		DropReplaced(sources);
 		std::ranges::stable_sort(sources, std::greater{}, &Source::priority);
 		logs::info("{} survival mod(s) with needs supported", sources.size());
 	}

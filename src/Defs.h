@@ -5,25 +5,52 @@
 namespace Defs
 {
 	// A number, { "global": "<id>" }, { "script": { "quest": "<id>", "script": "<class>", "variable": "<name>" } }
-	// (auto properties: "::<name>_var") or { "questRunning": "<id>" } (1 while the quest runs); any of them can add
-	// "plugin". As a condition it holds when > 0, or >= "atLeast" if given (Frostfall's switches are 1 = off, 2 = on).
+	// (auto properties: "::<name>_var"), { "questRunning": "<id>" } (1 while the quest runs) or
+	// { "playerHasSpell": "<id>" } (1 while the player has the spell); any of them can add "plugin". As a condition it
+	// holds when > 0, or >= "atLeast" if given (Frostfall's switches are 1 = off, 2 = on).
 	struct Value
 	{
 		std::optional<float> constant;
 		RE::TESGlobal*       global{ nullptr };
 		RE::TESQuest*        quest{ nullptr };
 		bool                 running{ false };  // quest: whether it runs, not a script variable
+		RE::SpellItem*       spell{ nullptr };
 		std::string          script;
 		RE::BSFixedString    variable;
 		std::optional<float> atLeast;
 
-		bool Valid() const { return constant || global || quest; }
+		bool Valid() const { return constant || global || quest || spell; }
 
 		std::optional<float> Get() const;
 		bool                 Holds() const;
 	};
 
 	Value ParseValue(const json& a_json, const std::string& a_plugin);
+
+	// "stages": a list of values (numbers or globals), read again every sample; one that can't be read repeats the one
+	// before it
+	std::vector<Value> ParseStages(const json& a_parent, const std::string& a_plugin);
+	std::vector<float> GetStages(const std::vector<Value>& a_stages);
+
+	// "replaces": a definition's "name" or a list of them, left out while this one is loaded (Survival Mode Improved
+	// takes over Survival Mode's globals)
+	std::vector<std::string> ParseReplaces(const json& a_json);
+
+	template <class T>
+	void DropReplaced(std::vector<T>& a_sources)
+	{
+		std::vector<std::string> replaced;
+		for (const auto& source : a_sources) {
+			replaced.insert(replaced.end(), source.replaces.begin(), source.replaces.end());
+		}
+		std::erase_if(a_sources, [&](const T& a_source) {
+			if (std::ranges::find(replaced, a_source.name) == replaced.end()) {
+				return false;
+			}
+			logs::info("{}: replaced by another definition, left out", a_source.name);
+			return true;
+		});
+	}
 
 	// "enabled": one value or a list, all must hold (left out: always on)
 	std::vector<Value> ParseConditions(const json& a_parent, const char* a_key, const std::string& a_plugin);

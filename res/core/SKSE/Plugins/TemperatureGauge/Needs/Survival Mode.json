@@ -6,7 +6,12 @@
 	"hunger": {
 		"value": { "global": "0x81A", "_": "Survival_HungerNeedValue" },
 		"max": { "global": "0x80C", "_": "Survival_HungerNeedMaxValue" },
-		"stages": [ 160, 340, 520, 770 ],
+		"stages": [
+			{ "global": "0x802", "_": "Survival_HungerStage2Value (160)" },
+			{ "global": "0x803", "_": "Survival_HungerStage3Value (340)" },
+			{ "global": "0x804", "_": "Survival_HungerStage4Value (520)" },
+			{ "global": "0x805", "_": "Survival_HungerStage5Value (770)" }
+		],
 		"stageNames": [
 			{ "spell": "0x87E", "fallback": "Satisfied" },
 			{ "spell": "0x880", "fallback": "Peckish" },

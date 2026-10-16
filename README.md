@@ -13,9 +13,9 @@ Frostfall's exposure meter).
 - Optional hunger, thirst and fatigue gauges (Needs page): arcs on the temperature gauge's circle (one click puts them
   on the other side of a minimap), bars drawn like the temperature gauge, or rings with an apple, a water drop and a
   moon; a color per need or by stage, the temperature gauge's line or arrow marker, stage marks, pulsing at the worst
-  stages, stage names. Survival Mode has hunger and fatigue, SunHelm all three (its own need icons
-  are hidden while the gauges are on). Frostfall has no needs of its own; next to it the gauges read the needs mod you
-  run with it.
+  stages, stage names. Survival Mode (also with Survival Mode Improved - SKSE) has hunger and fatigue, SunHelm all
+  three (its own need icons are hidden while the gauges are on). Frostfall has no needs of its own; next to it the
+  gauges read the needs mod you run with it.
 - Menus in all the languages Skyrim ships with (English, French, German, Italian, Spanish, Polish, Russian, Japanese,
   Chinese), chosen on the Languages page.
 
@@ -23,8 +23,8 @@ Frostfall's exposure meter).
 
 - SKSE, Address Library for SKSE Plugins
 - SKSE Menu Framework (3 or newer)
-- A supported survival mod: Survival Mode (Creation Club, built in), SunHelm Survival or Frostfall (patches in the
-  installer)
+- A supported survival mod: Survival Mode (Creation Club, built in), Survival Mode Improved - SKSE, SunHelm Survival
+  or Frostfall (patches in the installer)
 
 ## Credits
 

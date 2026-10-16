@@ -1,0 +1,58 @@
+{
+	"name": "Survival Mode Improved",
+	"description": "Reads Survival Mode Improved - SKSE: its six hunger and fatigue stages (Well Fed / Rested .. Starving / Debilitated) with the stage values its plugin sets, and its own temperature (ambient cold, stages).",
+	"plugin": "SurvivalModeImproved.esp",
+	"replaces": "Survival Mode",
+	"priority": 5,
+	"enabled": { "global": "0x826", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ModeEnabled" },
+	"hunger": {
+		"enabled": { "global": "0xA14", "atLeast": 0, "_": "current hunger stage (-1 = stopped)" },
+		"value": { "global": "0x81A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerNeedValue" },
+		"max": { "global": "0x80C", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerNeedMaxValue" },
+		"stages": [
+			{ "global": "0x806", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage1Value" },
+			{ "global": "0x802", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage2Value" },
+			{ "global": "0x803", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage3Value" },
+			{ "global": "0x804", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage4Value" },
+			{ "global": "0x805", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage5Value" }
+		],
+		"stageNames": [
+			{ "spell": "0x876", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Well Fed" },
+			{ "spell": "0x87E", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Fed" },
+			{ "spell": "0x880", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Peckish" },
+			{ "spell": "0x881", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Hungry" },
+			{ "spell": "0x886", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Famished" },
+			{ "spell": "0x885", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Starving" }
+		],
+		"bonusStages": 1,
+		"comfortableStages": 2,
+		"dangerStage": 4
+	},
+	"fatigue": {
+		"enabled": { "global": "0xA1C", "atLeast": 0, "_": "current exhaustion stage (-1 = stopped)" },
+		"value": { "global": "0x816", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ExhaustionNeedValue" },
+		"max": { "global": "0x84A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ExhaustionNeedMaxValue" },
+		"stages": [
+			{ "global": "0xA17", "_": "exhaustion stage 1" },
+			{ "global": "0xA18", "_": "exhaustion stage 2" },
+			{ "global": "0xA19", "_": "exhaustion stage 3" },
+			{ "global": "0xA1A", "_": "exhaustion stage 4" },
+			{ "global": "0xA1B", "_": "exhaustion stage 5" }
+		],
+		"stageNames": [
+			{ "spell": "0x0FB981", "plugin": "Skyrim.esm", "fallback": "Rested" },
+			{ "spell": "0x878", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Refreshed" },
+			{ "spell": "0x879", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Drained" },
+			{ "spell": "0x87A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Tired" },
+			{ "spell": "0x87B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Weary" },
+			{ "spell": "0x87D", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Debilitated" }
+		],
+		"bonusStages": 1,
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonus": {
+			"when": { "playerHasSpell": "0x0FB984", "plugin": "Skyrim.esm", "_": "Well Rested" },
+			"name": { "spell": "0x0FB984", "plugin": "Skyrim.esm", "fallback": "Well Rested" }
+		}
+	}
+}

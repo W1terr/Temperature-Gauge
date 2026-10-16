@@ -53,6 +53,10 @@ namespace Defs
 		if (running) {
 			return quest->IsRunning() ? 1.0f : 0.0f;
 		}
+		if (spell) {
+			const auto player = RE::PlayerCharacter::GetSingleton();
+			return player && player->HasSpell(spell) ? 1.0f : 0.0f;
+		}
 		if (const auto object = ScriptObject(quest, script)) {
 			if (const auto v = object->GetVariable(variable)) {
 				if (v->IsInt()) {
@@ -91,6 +95,8 @@ namespace Defs
 		} else if (a_json.contains("questRunning")) {
 			value.quest = LookupForm<RE::TESQuest>(a_json["questRunning"], plugin);
 			value.running = true;
+		} else if (a_json.contains("playerHasSpell")) {
+			value.spell = LookupForm<RE::SpellItem>(a_json["playerHasSpell"], plugin);
 		} else if (a_json.contains("script")) {
 			const auto& s = a_json["script"];
 			value.quest = LookupForm<RE::TESQuest>(s.at("quest"), s.value("plugin", plugin));
@@ -98,6 +104,37 @@ namespace Defs
 			value.variable = s.at("variable").get<std::string>();
 		}
 		return value;
+	}
+
+	std::vector<Value> ParseStages(const json& a_parent, const std::string& a_plugin)
+	{
+		std::vector<Value> stages;
+		for (const auto& v : a_parent.value("stages", json::array())) {
+			stages.push_back(ParseValue(v, a_plugin));
+		}
+		return stages;
+	}
+
+	std::vector<float> GetStages(const std::vector<Value>& a_stages)
+	{
+		std::vector<float> stages;
+		stages.reserve(a_stages.size());
+		for (const auto& v : a_stages) {
+			stages.push_back(v.Get().value_or(stages.empty() ? 0.0f : stages.back()));
+		}
+		return stages;
+	}
+
+	std::vector<std::string> ParseReplaces(const json& a_json)
+	{
+		std::vector<std::string> names;
+		if (a_json.contains("replaces")) {
+			const auto& r = a_json["replaces"];
+			for (const auto& name : r.is_array() ? r : json::array({ r })) {
+				names.push_back(name.get<std::string>());
+			}
+		}
+		return names;
 	}
 
 	std::vector<Value> ParseConditions(const json& a_parent, const char* a_key, const std::string& a_plugin)

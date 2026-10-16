@@ -1,0 +1,38 @@
+{
+	"name": "Survival Mode Improved",
+	"description": "Reads Survival Mode Improved - SKSE: its six hunger and fatigue stages (Well Fed / Rested .. Starving / Debilitated) with the stage values its plugin sets, and its own temperature (ambient cold, stages).",
+	"plugin": "SurvivalModeImproved.esp",
+	"replaces": "Survival Mode",
+	"priority": 5,
+	"enabled": [
+		{ "global": "0x826", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ModeEnabled" },
+		{ "global": "0xD1E", "atLeast": 0, "_": "current cold stage (-1 = stopped)" }
+	],
+	"cold": { "global": "0x81B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ColdNeedValue" },
+	"max": { "global": "0x84B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ColdNeedMaxValue" },
+	"stages": [
+		{ "global": "0xD20", "_": "cold stage 1" },
+		{ "global": "0xD21", "_": "cold stage 2" },
+		{ "global": "0xD22", "_": "cold stage 3" },
+		{ "global": "0xD23", "_": "cold stage 4" },
+		{ "global": "0xD24", "_": "cold stage 5" }
+	],
+	"stageNames": [
+		{ "spell": "0x890", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Warm" },
+		{ "spell": "0x86E", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Comfortable" },
+		{ "spell": "0x891", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Chilly" },
+		{ "spell": "0x86D", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Very Cold" },
+		{ "spell": "0x870", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Freezing" },
+		{ "spell": "0x871", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Numb" }
+	],
+	"comfortableStages": 2,
+	"dangerStage": 4,
+	"temperatureLevel": { "global": "0x2EDD", "plugin": "Update.esm", "_": "Survival_TemperatureLevel" },
+	"target": { "value": { "global": "0xD1D", "_": "SMI_CurrentAmbientTemp" }, "deadlyFrom": 600 },
+	"hide": {
+		"hudPaths": [
+			"_root.HUDMovieBaseInstance.TemperatureMeter_mc",
+			"_root.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass.CompassTemperatureHolderInstance"
+		]
+	}
+}

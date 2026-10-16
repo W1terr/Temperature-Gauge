@@ -7,11 +7,12 @@
 // {
 //   "name": "SunHelm Survival",
 //   "plugin": "SunHelmSurvival.esp",          forms are local IDs in this plugin unless a value names its own "plugin"
+//   "replaces": "Survival Mode",              optional, definitions (by "name") left out while this one is loaded
 //   "priority": 10,                           with several mods running, the highest priority is shown
 //   "enabled": { "global": "0x79441D" },      the mod's cold system is on (left out: always on); a list = all of them
 //   "cold": { "global": "0x6A13C5" },         the cold need: 0 = warm .. "max" = deadly
 //   "max": { "global": "0xA08085" },          or a number
-//   "stages": [25, 150, 250, 450, 700],       cold where stage 1, 2, ... begins
+//   "stages": [25, 150, 250, 450, 700],       cold where stage 1, 2, ... begins (numbers or values, e.g. globals)
 //   "stageNames": [ { "spell": "0x6E81DA", "fallback": "Warm" }, "Comfortable", ... ],   stage 0 .. N
 //   "comfortableStages": 2,                   stages 0 .. n-1 have no penalties (the green zone)
 //   "dangerStage": 4,                         from this stage on the marker pulses (default: the second to last)
@@ -40,11 +41,12 @@ namespace Temperature
 		{
 			std::string              name;
 			int                      priority{ 0 };
+			std::vector<std::string> replaces;
 			std::vector<Value>       enabled;  // all of them hold = on
 			Value                    cold;
 			Value                    max;
 			Value                    temperatureLevel;
-			std::vector<float>       stages;     // start of stage 1 .. N
+			std::vector<Value>       stages;     // start of stage 1 .. N
 			std::vector<std::string> stageNames; // stage 0 .. N
 			int                      comfortableStages{ 2 };
 			int                      dangerStage{ 4 };
@@ -64,18 +66,18 @@ namespace Temperature
 
 			bool On() const { return AllHold(enabled); }
 
-			float Max() const
+			float Max(const std::vector<float>& a_stages) const
 			{
 				const auto v = max.Get();
-				return v && *v > 0.0f ? *v : (stages.empty() ? 1000.0f : stages.back() * 1.25f);
+				return v && *v > 0.0f ? *v : (a_stages.empty() ? 1000.0f : a_stages.back() * 1.25f);
 			}
 
 			// cold -> gauge scale, linear between cold 0, each stage start and max
-			float Position(float a_cold, float a_max) const
+			float Position(float a_cold, const std::vector<float>& a_stages, float a_max) const
 			{
 				float from = 0.0f;
-				for (std::size_t i = 0; i <= stages.size(); ++i) {
-					const float to = i < stages.size() ? stages[i] : a_max;
+				for (std::size_t i = 0; i <= a_stages.size(); ++i) {
+					const float to = i < a_stages.size() ? a_stages[i] : a_max;
 					if (a_cold <= to) {
 						const float t = std::clamp((a_cold - from) / std::max(to - from, 1e-3f), 0.0f, 1.0f);
 						return std::lerp(positions[i], positions[i + 1], t);
@@ -120,6 +122,7 @@ namespace Temperature
 			}
 			logs::info("{} ({})", s.name, a_file.filename().string());
 			s.priority = j.value("priority", 0);
+			s.replaces = ParseReplaces(j);
 			s.enabled = ParseConditions(j, "enabled", plugin);
 			s.cold = ParseValue(j.at("cold"), plugin);
 			if (!s.cold.Valid()) {
@@ -135,7 +138,7 @@ namespace Temperature
 			if (j.contains("nearHeat")) {
 				s.nearHeat = ParseValue(j["nearHeat"], plugin);
 			}
-			s.stages = j.value("stages", std::vector<float>{});
+			s.stages = ParseStages(j, plugin);
 			for (const auto& name : j.value("stageNames", json::array())) {
 				s.stageNames.push_back(StageName(name, plugin));
 			}
@@ -177,18 +180,19 @@ namespace Temperature
 		}
 
 		// the highest stage the area's cold level allows -> the most cold it can give
-		float StageCeiling(const Source& a_source, float a_level, float a_max)
+		float StageCeiling(const Source& a_source, const std::vector<float>& a_stages, float a_level, float a_max)
 		{
 			std::size_t stage = 0;
 			while (stage < a_source.levelStages.size() && a_level >= a_source.levelStages[stage]) {
 				++stage;
 			}
-			return stage >= a_source.stages.size() ? a_max : a_source.stages[stage] - 1.0f;
+			return stage >= a_stages.size() ? a_max : a_stages[stage] - 1.0f;
 		}
 
 		Reading Read(const Source& a_source)
 		{
-			const float max = a_source.Max();
+			const auto  stages = GetStages(a_source.stages);
+			const float max = a_source.Max(stages);
 			const float cold = std::clamp(a_source.cold.Get().value_or(0.0f), 0.0f, max);
 			const int   level = static_cast<int>(a_source.temperatureLevel.Get().value_or(0.0f));
 
@@ -207,14 +211,14 @@ namespace Temperature
 				}
 			} else if (a_source.targetLevel.Valid()) {
 				if (const auto v = a_source.targetLevel.Get()) {
-					target = StageCeiling(a_source, *v, max);
+					target = StageCeiling(a_source, stages, *v, max);
 				}
 			}
 
 			Reading r;
-			r.body = a_source.Position(cold, max);
+			r.body = a_source.Position(cold, stages, max);
 			if (target) {
-				r.target = a_source.Position(*target, max);
+				r.target = a_source.Position(*target, stages, max);
 			}
 			if (byLevel) {
 				constexpr std::array kTrend{ 0, 2, 1, -1, -2 };
@@ -228,7 +232,7 @@ namespace Temperature
 				}
 			}
 			int stage = 0;
-			while (stage < static_cast<int>(a_source.stages.size()) && cold >= a_source.stages[stage]) {
+			while (stage < static_cast<int>(stages.size()) && cold >= stages[stage]) {
 				++stage;
 			}
 			r.stage = a_source.stageNames[stage];
@@ -256,6 +260,7 @@ namespace Temperature
 		if (ec) {
 			logs::error("Can't read {}: {}", kFolder, ec.message());
 		}
+		DropReplaced(sources);
 		std::ranges::stable_sort(sources, std::greater{}, &Source::priority);
 		logs::info("{} survival mod(s) supported", sources.size());
 	}
