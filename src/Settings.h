@@ -38,7 +38,7 @@ struct NeedsSettings
 	bool       enabled{ false };
 	Visibility visibility{ Visibility::kAlways };  // kNotComfortable: each need shows while it has penalties
 	float      hideDelay{ 4.0f };
-	std::array<bool, 3> show{ true, true, true };  // hunger, thirst, fatigue
+	std::array<bool, 5> show{ true, true, true, true, true };  // hunger, thirst, fatigue, inebriation, weight
 
 	NeedStyle style{ NeedStyle::kRing };
 	bool      column{ false };  // stacked instead of side by side
@@ -70,9 +70,43 @@ struct NeedsSettings
 	RGBA bonus{ 0.98f, 0.84f, 0.38f, 1.0f };
 	RGBA track{ 0.0f, 0.0f, 0.0f, 0.45f };
 	RGBA icon{ 0.95f, 0.96f, 0.93f, 1.0f };
-	std::array<RGBA, 3> needColors{ { { 0.97f, 0.55f, 0.13f, 1.0f },     // hunger: orange
+	std::array<RGBA, 5> needColors{ { { 0.97f, 0.55f, 0.13f, 1.0f },     // hunger: orange
 		{ 0.13f, 0.40f, 0.96f, 1.0f },                                 // thirst: blue
-		{ 0.56f, 0.36f, 0.19f, 1.0f } } };                             // fatigue: brown
+		{ 0.56f, 0.36f, 0.19f, 1.0f },                                 // fatigue: brown
+		{ 0.92f, 0.76f, 0.22f, 1.0f },                                 // inebriation: mead gold
+		{ 0.78f, 0.32f, 0.36f, 1.0f } } };                             // weight: muscle red
+};
+
+// The stress gauge (Stress and Fear page) looks like one of the needs gauges and has the same settings; arcFlip
+// (the calm end at the other end) makes the ring fill up with stress and puts the bar's calm end on the left. Only
+// needColors[0] is used. kNotComfortable: shown while there is any stress.
+inline NeedsSettings StressDefaults()
+{
+	NeedsSettings n;
+	n.enabled = true;
+	n.visibility = Visibility::kNotComfortable;
+	n.hideDelay = 3.0f;
+	n.posX = 0.875f;
+	n.arcFlip = true;
+	n.colorByNeed = false;
+	n.arcStart = 200.0f;
+	n.needColors[0] = { 0.62f, 0.38f, 0.92f, 1.0f };  // violet
+	return n;
+}
+
+// The fear indicator: an eye and the phobia's name while a phobia works (the player faces what they fear)
+struct FearSettings
+{
+	bool  enabled{ true };
+	float posX{ 0.5f };
+	float posY{ 0.16f };
+	float size{ 30.0f };         // the eye's width
+	bool  icon{ true };
+	bool  showName{ true };      // "Fear of Wolves"
+	float labelSize{ 16.0f };
+	bool  pulse{ true };
+	bool  showPhobias{ false };  // the phobias the player has, faint, while not afraid
+	RGBA  color{ 0.66f, 0.36f, 0.95f, 1.0f };
 };
 
 // Everything the gauge can be set up with in SKSE Menu Framework. Sizes are pixels at 1080p and scale with the screen
@@ -132,6 +166,10 @@ struct Settings
 
 	// hunger, thirst and fatigue gauges (optional; while on, the survival mod's own need icons are hidden)
 	NeedsSettings needs;
+
+	// Stress and Fear page (only while a supported stress mod is loaded)
+	NeedsSettings stress{ StressDefaults() };
+	FearSettings  fear;
 };
 
 namespace Config
@@ -143,6 +181,7 @@ namespace Config
 	void Save();
 	void Reset();       // everything back to the defaults
 	void ResetNeeds();  // the needs gauges' look back to the defaults (stays on / off)
+	void ResetStress(); // the stress gauge and the fear indicator back to the defaults (stay on / off)
 
 	// layouts the settings page offers as buttons; keep colors and behaviour
 	enum class Preset

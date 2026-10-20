@@ -1,0 +1,56 @@
+{
+	"name": "Conner's Survival Mode",
+	"description": "Reads Conner's Survival Mode: Survival Mode's hunger and fatigue with the stage values its scripts use (its plugin changes the hunger globals the scripts no longer read), and its switches that turn a need off.",
+	"plugin": "Conner's Survival Mode.esp",
+	"replaces": "Survival Mode",
+	"priority": 5,
+	"enabled": { "global": "0x826", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ModeEnabled" },
+	"hunger": {
+		"enabled": { "global": "0x029066", "below": 1, "_": "CRSurvival_HungerShouldBeOff" },
+		"value": { "global": "0x81A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerNeedValue" },
+		"max": { "global": "0x80C", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerNeedMaxValue" },
+		"stages": [
+			{ "script": { "quest": "0x894", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedHunger", "variable": "::needStage2Value_var" }, "default": 160 },
+			{ "script": { "quest": "0x894", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedHunger", "variable": "::needStage3Value_var" }, "default": 340 },
+			{ "script": { "quest": "0x894", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedHunger", "variable": "::needStage4Value_var" }, "default": 520 },
+			{ "script": { "quest": "0x894", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedHunger", "variable": "::needStage5Value_var" }, "default": 770 }
+		],
+		"stageNames": [
+			{ "spell": "0x87E", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Satisfied" },
+			{ "spell": "0x880", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Peckish" },
+			{ "spell": "0x881", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Hungry" },
+			{ "spell": "0x886", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Famished" },
+			{ "spell": "0x885", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Starving" }
+		],
+		"comfortableStages": 1,
+		"dangerStage": 3,
+		"bonus": {
+			"when": { "script": { "quest": "0x894", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedHunger", "variable": "::hasBonus_var" } },
+			"name": { "spell": "0x876", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Well Fed" }
+		}
+	},
+	"fatigue": {
+		"enabled": { "global": "0x029067", "below": 1, "_": "CRSurvival_FatigueShouldBeOff" },
+		"value": { "global": "0x816", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ExhaustionNeedValue" },
+		"max": { "global": "0x84A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ExhaustionNeedMaxValue" },
+		"stages": [
+			{ "script": { "quest": "0x899", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedExhaustion", "variable": "::needStage2Value_var" }, "default": 160 },
+			{ "script": { "quest": "0x899", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedExhaustion", "variable": "::needStage3Value_var" }, "default": 340 },
+			{ "script": { "quest": "0x899", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedExhaustion", "variable": "::needStage4Value_var" }, "default": 560 },
+			{ "script": { "quest": "0x899", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedExhaustion", "variable": "::needStage5Value_var" }, "default": 800 }
+		],
+		"stageNames": [
+			{ "spell": "0x878", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Refreshed" },
+			{ "spell": "0x879", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Drained" },
+			{ "spell": "0x87A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Tired" },
+			{ "spell": "0x87B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Weary" },
+			{ "spell": "0x87D", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Debilitated" }
+		],
+		"comfortableStages": 1,
+		"dangerStage": 3,
+		"bonus": {
+			"when": { "script": { "quest": "0x899", "plugin": "ccQDRSSE001-SurvivalMode.esl", "script": "Survival_NeedExhaustion", "variable": "::hasBonus_var" } },
+			"name": { "spell": "0x0FB984", "plugin": "Skyrim.esm", "fallback": "Well Rested" }
+		}
+	}
+}

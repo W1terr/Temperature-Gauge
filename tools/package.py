@@ -85,7 +85,7 @@ def info(ver: str) -> str:
     <Name>Temperature Gauge</Name>
     <Author>W1ter</Author>
     <Version>{ver}</Version>
-    <Description>A Crimson Desert style temperature gauge for survival mods, with optional hunger, thirst and fatigue gauges, set up in SKSE Menu Framework.</Description>
+    <Description>A Crimson Desert style temperature gauge for survival mods, with optional hunger, thirst and fatigue gauges and a stress gauge and fear indicator for Stress and Fear, set up in SKSE Menu Framework.</Description>
     <Groups>
         <element>User Interface</element>
     </Groups>

@@ -1,0 +1,32 @@
+{
+	"name": "Frostbite",
+	"description": "Shows Frostbite's body temperature (Warm .. Freezing, the stages where its regeneration and damage debuffs start) and warming up / cooling down from the spot's temperature, and hides Frostbite's meter. Needs Frostbite enabled in its menu.",
+	"plugin": "Frostbite.esp",
+	"priority": 10,
+	"enabled": { "global": "0x023F0F", "_": "_JSW_FB_Enabled" },
+	"cold": {
+		"script": { "quest": "0x005901", "alias": 0, "script": "_JSW_FB_HandlerScript", "variable": "::BodyTemp_var" },
+		"map": [ [ 0, 100 ], [ 1, 0 ] ],
+		"_": "BodyTemp 1 = completely warm .. 0 = frozen, as cold 0 .. 100"
+	},
+	"max": 100,
+	"stages": [
+		1,
+		{ "global": "0x029021", "map": [ [ 0, 100 ], [ 1, 0 ] ], "_": "_JSW_FB_RegenDebuff: no regeneration at this body temperature" },
+		{ "global": "0x029020", "map": [ [ 0, 100 ], [ 1, 0 ] ], "_": "_JSW_FB_DamageDebuff: the cold hurts at this body temperature" }
+	],
+	"stageNames": [ "Warm", "Cool", "Cold", "Freezing" ],
+	"comfortableStages": 2,
+	"dangerStage": 3,
+	"positions": [ 0.75, 0.55, 0.0, -0.45, -1.0 ],
+	"trend": {
+		"value": {
+			"script": { "quest": "0x005901", "alias": 0, "script": "_JSW_FB_HandlerScript", "variable": "::CurrentTemp_var" },
+			"map": [ [ -3, -2 ], [ -2, -1 ], [ -1, -1 ], [ 0, 0 ], [ 1, 1 ], [ 2, 2 ] ],
+			"_": "the spot: -3 freezing, -2 cold, -1 cool, 0 neither, 1 comfortable, 2 warm (fire, warm interior)"
+		}
+	},
+	"hide": {
+		"skyuiWidget": { "quest": "0x005901", "script": "_JSW_FB_MeterWidget", "_": "_JSW_FB_HandlerQuest's meter" }
+	}
+}

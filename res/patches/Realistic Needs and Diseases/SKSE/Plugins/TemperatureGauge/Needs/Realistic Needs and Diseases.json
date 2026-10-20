@@ -1,0 +1,351 @@
+{
+	"name": "Realistic Needs and Diseases",
+	"description": "Shows Realistic Needs and Diseases' hunger, thirst and sleep (Gluttony / Quenched / Not Tired .. Starving / Dehydrated / Exhausted, with the stage values set in its menu), inebriation (Sober .. Blackout) and weight (Muscular .. Skinny, in kg), and hides its widgets of the needs shown.",
+	"plugin": "RealisticNeedsandDiseases.esp",
+	"priority": 10,
+	"hunger": {
+		"value": {
+			"global": "0x002884",
+			"_": "RND_HungerPoints"
+		},
+		"max": {
+			"global": "0x002DEE",
+			"_": "RND_HungerLevel05 (the points stop there)"
+		},
+		"stages": [
+			{
+				"global": "0x002DEA",
+				"_": "RND_HungerLevel01"
+			},
+			{
+				"global": "0x002DEB",
+				"_": "RND_HungerLevel02"
+			},
+			{
+				"global": "0x002DEC",
+				"_": "RND_HungerLevel03"
+			},
+			{
+				"global": "0x002DED",
+				"_": "RND_HungerLevel04"
+			},
+			{
+				"global": "0x002DEE",
+				"_": "RND_HungerLevel05"
+			}
+		],
+		"stageNames": [
+			{
+				"effect": "0x000D62",
+				"fallback": "Gluttony"
+			},
+			{
+				"effect": "0x0012C5",
+				"fallback": "Satiated"
+			},
+			{
+				"effect": "0x0012C6",
+				"fallback": "Peckish"
+			},
+			{
+				"effect": "0x0012C7",
+				"fallback": "Hungry"
+			},
+			{
+				"effect": "0x001834",
+				"fallback": "Very Hungry"
+			},
+			{
+				"effect": "0x0012C8",
+				"fallback": "Starving"
+			}
+		],
+		"comfortableStages": 3,
+		"dangerStage": 4,
+		"bonusStages": 2,
+		"hide": {
+			"skyuiWidget": {
+				"quest": "0x06B571",
+				"script": "RND_HungerCountScript",
+				"_": "RNDConfigQuest's hunger widget"
+			}
+		}
+	},
+	"thirst": {
+		"value": {
+			"global": "0x002E07",
+			"_": "RND_ThirstPoints"
+		},
+		"max": {
+			"global": "0x002E0E",
+			"_": "RND_ThirstLevel04 (the points stop there)"
+		},
+		"stages": [
+			{
+				"global": "0x002E0B",
+				"_": "RND_ThirstLevel01"
+			},
+			{
+				"global": "0x002E0C",
+				"_": "RND_ThirstLevel02"
+			},
+			{
+				"global": "0x002E0D",
+				"_": "RND_ThirstLevel03"
+			},
+			{
+				"global": "0x002E0E",
+				"_": "RND_ThirstLevel04"
+			}
+		],
+		"stageNames": [
+			{
+				"effect": "0x0012CD",
+				"fallback": "Quenched"
+			},
+			{
+				"effect": "0x0012CE",
+				"fallback": "Slightly Thirsty"
+			},
+			{
+				"effect": "0x0012CF",
+				"fallback": "Thirsty"
+			},
+			{
+				"effect": "0x002DF8",
+				"fallback": "Very Thirsty"
+			},
+			{
+				"effect": "0x0012D0",
+				"fallback": "Dehydrated"
+			}
+		],
+		"comfortableStages": 2,
+		"dangerStage": 3,
+		"bonusStages": 1,
+		"hide": {
+			"skyuiWidget": {
+				"quest": "0x06B571",
+				"script": "RND_ThirstCountScript"
+			}
+		}
+	},
+	"fatigue": {
+		"value": {
+			"global": "0x00BAC2",
+			"_": "RND_SleepPoints"
+		},
+		"max": {
+			"global": "0x00BAC8",
+			"_": "RND_SleepLevel04 (the points stop there)"
+		},
+		"stages": [
+			{
+				"global": "0x00BAC5",
+				"_": "RND_SleepLevel01"
+			},
+			{
+				"global": "0x00BAC6",
+				"_": "RND_SleepLevel02"
+			},
+			{
+				"global": "0x00BAC7",
+				"_": "RND_SleepLevel03"
+			},
+			{
+				"global": "0x00BAC8",
+				"_": "RND_SleepLevel04"
+			}
+		],
+		"stageNames": [
+			{
+				"effect": "0x026FB1",
+				"fallback": "Not Tired"
+			},
+			{
+				"effect": "0x00337C",
+				"fallback": "Slightly Tired"
+			},
+			{
+				"effect": "0x00337D",
+				"fallback": "Tired"
+			},
+			{
+				"effect": "0x00337E",
+				"fallback": "Very Tired"
+			},
+			{
+				"effect": "0x00337F",
+				"fallback": "Exhausted"
+			}
+		],
+		"comfortableStages": 2,
+		"dangerStage": 3,
+		"bonus": [
+			{
+				"when": {
+					"playerHasSpell": "0x0264E1"
+				},
+				"name": {
+					"spell": "0x0264E1",
+					"fallback": "Well Rested"
+				}
+			},
+			{
+				"when": {
+					"playerHasSpell": "0x0264E3"
+				},
+				"name": {
+					"spell": "0x0264E3",
+					"fallback": "Lover's Comfort"
+				}
+			},
+			{
+				"when": {
+					"playerHasSpell": "0x0264E5"
+				},
+				"name": {
+					"spell": "0x0264E5",
+					"fallback": "Rested"
+				}
+			}
+		],
+		"hide": {
+			"skyuiWidget": {
+				"quest": "0x06B571",
+				"script": "RND_SleepCountScript"
+			}
+		}
+	},
+	"inebriation": {
+		"value": {
+			"global": "0x0069A0",
+			"_": "RND_InebriationPoints"
+		},
+		"max": {
+			"global": "0x00699D",
+			"_": "RND_InebriationLevel04 = blackout (the points stop there)"
+		},
+		"stages": [
+			{
+				"global": "0x00699A",
+				"_": "RND_InebriationLevel01"
+			},
+			{
+				"global": "0x00699B",
+				"_": "RND_InebriationLevel02"
+			},
+			{
+				"global": "0x00699C",
+				"_": "RND_InebriationLevel03"
+			},
+			{
+				"global": "0x00699D",
+				"_": "RND_InebriationLevel04"
+			}
+		],
+		"stageNames": [
+			{
+				"effect": "0x0012C9",
+				"fallback": "Sober"
+			},
+			{
+				"effect": "0x0012CA",
+				"fallback": "Dizzy"
+			},
+			{
+				"effect": "0x0012CB",
+				"fallback": "Drunk"
+			},
+			{
+				"effect": "0x00491B",
+				"fallback": "Wasted"
+			},
+			{
+				"effect": "0x0012CC",
+				"fallback": "Blackout"
+			}
+		],
+		"comfortableStages": 2,
+		"dangerStage": 3,
+		"fillsUp": true,
+		"hide": {
+			"skyuiWidget": {
+				"quest": "0x06B571",
+				"script": "RND_InebriationCountScript"
+			}
+		}
+	},
+	"weight": {
+		"value": {
+			"playerWeight": true,
+			"map": [
+				[
+					0,
+					100
+				],
+				[
+					100,
+					0
+				]
+			],
+			"_": "body weight 100 = muscular (full) .. 0 = skinny"
+		},
+		"max": 100,
+		"stages": [
+			20,
+			40,
+			60,
+			80
+		],
+		"_stages": "Muscular above 80, Trained above 60, Wiry above 40, Slender above 20, Skinny",
+		"stageNames": [
+			{
+				"effect": "0x15AEDE",
+				"fallback": "Muscular"
+			},
+			{
+				"effect": "0x15AEE4",
+				"fallback": "Trained"
+			},
+			{
+				"effect": "0x15FFE9",
+				"fallback": "Wiry"
+			},
+			{
+				"effect": "0x15FFEE",
+				"fallback": "Slender"
+			},
+			{
+				"effect": "0x15FFF4",
+				"fallback": "Skinny"
+			}
+		],
+		"comfortableStages": 5,
+		"dangerStage": 5,
+		"detail": {
+			"value": {
+				"playerWeight": true,
+				"map": [
+					[
+						0,
+						50
+					],
+					[
+						100,
+						100
+					]
+				]
+			},
+			"format": "{:.0f} kg",
+			"_": "RND's widget: (weight + 100) / 2"
+		},
+		"hide": {
+			"skyuiWidget": {
+				"quest": "0x06B571",
+				"script": "RND_WeightCountScript"
+			}
+		}
+	},
+	"_": "No enabled conditions: like RNDs own widgets, the gauges show its values whether its needs have started or not (a save where they havent keeps the plugins starting values)"
+}

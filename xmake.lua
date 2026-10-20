@@ -15,11 +15,11 @@ add_requires("nlohmann_json")
 
 -- define targets
 target("TemperatureGauge")
-    set_version("2.1.0")
+    set_version("3.0.0")
     add_rules("commonlibsse-ng.plugin", {
         name = "TemperatureGauge",
         author = "W1ter",
-        description = "Crimson Desert style temperature gauge (and hunger, thirst, fatigue gauges) for survival mods, configured through SKSE Menu Framework"
+        description = "Crimson Desert style temperature gauge (and hunger, thirst, fatigue, stress gauges) for survival mods, configured through SKSE Menu Framework"
     })
 
     add_packages("nlohmann_json")

@@ -1,9 +1,10 @@
 """
 Checks the translations in res/core/SKSE/Plugins/TemperatureGauge/lang against the texts the code translates.
 
-The English texts are the keys: T("..."), F("..."), Id("..."), Hint("..."), Color("...", ...), EnumCombo("...", ...), the combo name lists
-(xxxNames{ ... }), the sidebar pages (SidebarPage{ "..." }), kGlyphHint and Lang::T(...) in Gauge.cpp / NeedsGauge.cpp;
-stage names from the Sources and Needs definitions.
+The English texts are the keys: T("..."), F("..."), Id("..."), Hint("..."), Color("...", ...), EnumCombo("...", ...) (every
+text in their first argument, e.g. both sides of a ? :), the combo name lists (xxxNames{ ... }), the sidebar pages
+({ "...", RenderXxx, ... }), kGlyphHint and Lang::T(...) in Gauge.cpp / NeedsGauge.cpp; stage names from the Sources,
+Needs and Stress definitions.
 Reports keys missing from a language file, keys the code no longer uses and broken {} placeholders.
 usage: python check_lang.py [--keys]   (--keys: print the keys as a json template)
 """
@@ -30,12 +31,13 @@ def code_keys() -> list[str]:
 
     for path in SOURCES:
         src = re.sub(r"//[^\n]*", "", path.read_text(encoding="utf-8"))
-        for m in re.finditer(rf"\b(?:T|F|Id|Hint|Color|EnumCombo)\(\s*({LITERAL})", src):
-            add(json.loads(m.group(1)))
+        for m in re.finditer(r"\b(?:T|F|Id|Hint|Color|EnumCombo)\(", src):
+            for lit in re.findall(LITERAL, first_argument(src, m.end())):
+                add(json.loads(lit))
         for m in re.finditer(r"\w+Names\{([^}]*)\}", src):
             for lit in re.findall(LITERAL, m.group(1)):
                 add(json.loads(lit))
-        for m in re.finditer(rf"SidebarPage\{{\s*({LITERAL})", src):
+        for m in re.finditer(rf"\{{\s*({LITERAL})\s*,\s*Render\w+", src):
             add(json.loads(m.group(1)))
         for m in re.finditer(rf"kGlyphHint\s*=\s*({LITERAL})", src):
             add(json.loads(m.group(1)))
@@ -48,18 +50,41 @@ def code_keys() -> list[str]:
             text = name if isinstance(name, str) else name.get("fallback")
             if text:
                 add(text)
-    # needs definitions: the same for each need's stage names and its bonus name
-    for path in sorted((ROOT / "res").rglob("Needs/*.json")):
-        data = json.loads(path.read_text(encoding="utf-8"))
-        for need in ("hunger", "thirst", "fatigue"):
-            names = list(data.get(need, {}).get("stageNames", []))
-            if "name" in data.get(need, {}).get("bonus", {}):
-                names.append(data[need]["bonus"]["name"])
-            for name in names:
-                text = name if isinstance(name, str) else name.get("fallback")
-                if text:
-                    add(text)
+    # needs and stress definitions: the same for each meter's stage names and its bonus names
+    meters = [(path, need) for path in sorted((ROOT / "res").rglob("Needs/*.json")) for need in ("hunger", "thirst", "fatigue", "inebriation", "weight")]
+    meters += [(path, "stress") for path in sorted((ROOT / "res").rglob("Stress/*.json"))]
+    for path, key in meters:
+        meter = json.loads(path.read_text(encoding="utf-8")).get(key, {})
+        names = list(meter.get("stageNames", []))
+        bonus = meter.get("bonus", [])
+        for b in bonus if isinstance(bonus, list) else [bonus]:
+            if "name" in b:
+                names.append(b["name"])
+        for name in names:
+            text = name if isinstance(name, str) else name.get("fallback")
+            if text:
+                add(text)
     return keys
+
+
+def first_argument(src: str, start: int) -> str:
+    """the text of a call's first argument, from just after its "(" to the "," or ")" that ends it"""
+    depth, i = 0, start
+    while i < len(src):
+        c = src[i]
+        if c == '"':
+            i += re.match(LITERAL, src[i:]).end()
+            continue
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            if depth == 0:
+                break
+            depth -= 1
+        elif c == "," and depth == 0:
+            break
+        i += 1
+    return src[start:i]
 
 
 def placeholders(text: str) -> list[str]:

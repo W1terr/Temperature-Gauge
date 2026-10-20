@@ -4,11 +4,13 @@
 #include "Draw.h"
 #include "Framework.h"
 #include "HudIcons.h"
+#include "IHud.h"
 #include "Lang.h"
 #include "Menus.h"
 #include "Needs.h"
 #include "NeedsGauge.h"
 #include "Settings.h"
+#include "Stress.h"
 #include "Temperature.h"
 #include "UI.h"
 
@@ -106,16 +108,20 @@ namespace UI
 		};
 		State state;
 
-		// a_needs: the needs too (only while their gauges are on or the settings show them)
-		void ScheduleSample(bool a_needs)
+		// a_needs / a_stress: those too (only while their gauges are on or the settings show them)
+		void ScheduleSample(bool a_needs, bool a_stress)
 		{
 			if (state.samplePending.exchange(true)) {
 				return;
 			}
-			SKSE::GetTaskInterface()->AddTask([a_needs] {
+			SKSE::GetTaskInterface()->AddTask([a_needs, a_stress] {
+				IHud::KeepOpen();
 				Temperature::Sample();
 				if (a_needs) {
 					Needs::Sample();
+				}
+				if (a_stress) {
+					Stress::Sample();
 				}
 				state.samplePending = false;
 			});
@@ -257,8 +263,12 @@ namespace UI
 				paths = Temperature::IconPaths();
 			}
 			if (s.needs.enabled) {
-				const auto needs = Needs::IconPaths();
+				const auto needs = Needs::IconPaths(s.needs.show);
 				paths.insert(paths.end(), needs.begin(), needs.end());
+			}
+			if (s.stress.enabled) {
+				const auto stress = Stress::IconPaths();
+				paths.insert(paths.end(), stress.begin(), stress.end());
 			}
 			return paths;
 		}
@@ -333,13 +343,16 @@ namespace UI
 		state.sampleTimer -= dt;
 		if (state.sampleTimer <= 0.0f) {
 			state.sampleTimer = kSampleInterval;
-			ScheduleSample(s.needs.enabled || preview);
+			ScheduleSample(s.needs.enabled || preview, Stress::Available() && (s.stress.enabled || s.fear.enabled || preview));
 			HudIcons::Update(IconsToHide(s));
 		}
 
 		const bool  gameplay = preview || InGameplay();
+		// the HUD's own opacity (old Immersive HUD fades the whole HUD) and what Immersive HUD SKSE gives each group
 		const float hud = s.followHud && !preview ? HudIcons::Alpha() : 1.0f;
-		DrawTemperature(s, dt, preview, gameplay, hud);
-		DrawNeeds(s, dt, state.time, preview, gameplay, hud);
+		const auto  group = [&](IHud::Group a_group) { return s.followHud && !preview ? hud * IHud::Alpha(a_group) : 1.0f; };
+		DrawTemperature(s, dt, preview, gameplay, group(IHud::Group::kTemperature));
+		DrawNeeds(s, dt, state.time, preview, gameplay, group(IHud::Group::kNeeds));
+		DrawStress(s, dt, state.time, preview, gameplay, group(IHud::Group::kStress));
 	}
 }

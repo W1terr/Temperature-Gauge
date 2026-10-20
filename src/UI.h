@@ -23,6 +23,8 @@ namespace UI
 
 		bool  needs{ false };      // the needs gauges show made up values
 		bool  needsSweep{ true };  // ... going round
+		bool  stress{ false };     // the stress gauge and the fear indicator show made up values
+		bool  stressSweep{ true };
 	};
 	Preview& GetPreview();
 }

@@ -99,6 +99,68 @@ namespace Config
 			a_fn("needBonus", n.bonus);
 			a_fn("needTrack", n.track);
 			a_fn("needIcon", n.icon);
+
+			auto& st = a_s.stress;
+			a_fn("stressEnabled", st.enabled);
+			a_fn("stressVisibility", st.visibility);
+			a_fn("stressHideDelay", st.hideDelay);
+			a_fn("stressStyle", st.style);
+			a_fn("stressPosX", st.posX);
+			a_fn("stressPosY", st.posY);
+			a_fn("stressSize", st.size);
+			a_fn("stressThickness", st.thickness);
+			a_fn("stressBarLength", st.barLength);
+			a_fn("stressBarCurve", st.barCurve);
+			a_fn("stressArcRadius", st.arcRadius);
+			a_fn("stressArcStart", st.arcStart);
+			a_fn("stressArcSpan", st.arcSpan);
+			a_fn("stressFlip", st.arcFlip);
+			a_fn("stressMarker", st.marker);
+			a_fn("stressOneColor", st.colorByNeed);
+			a_fn("stressFadeEnds", st.fadeEnds);
+			a_fn("stressColor", st.needColors[0]);
+			a_fn("stressIcon", st.icons);
+			a_fn("stressTicks", st.ticks);
+			a_fn("stressPulseDanger", st.pulseDanger);
+			a_fn("stressShowLabel", st.showLabel);
+			a_fn("stressLabelSize", st.labelSize);
+			a_fn("stressFine", st.fine);
+			a_fn("stressWarning", st.warning);
+			a_fn("stressDanger", st.danger);
+			a_fn("stressTrack", st.track);
+			a_fn("stressIconColor", st.icon);
+
+			auto& f = a_s.fear;
+			a_fn("fearEnabled", f.enabled);
+			a_fn("fearPosX", f.posX);
+			a_fn("fearPosY", f.posY);
+			a_fn("fearSize", f.size);
+			a_fn("fearIcon", f.icon);
+			a_fn("fearShowName", f.showName);
+			a_fn("fearLabelSize", f.labelSize);
+			a_fn("fearPulse", f.pulse);
+			a_fn("fearShowPhobias", f.showPhobias);
+			a_fn("fearColor", f.color);
+		}
+
+		void ClampMeter(NeedsSettings& n)
+		{
+			n.visibility = static_cast<Visibility>(std::clamp(static_cast<int>(n.visibility), 0, 1));
+			n.style = static_cast<NeedStyle>(std::clamp(static_cast<int>(n.style), 0, 2));
+			n.marker = static_cast<NeedMarker>(std::clamp(static_cast<int>(n.marker), 0, 2));
+			n.arcRadius = std::clamp(n.arcRadius, 10.0f, 1000.0f);
+			n.arcStart = std::clamp(n.arcStart, -360.0f, 360.0f);
+			n.arcSpan = std::clamp(n.arcSpan, -360.0f, 360.0f);
+			n.arcGap = std::clamp(n.arcGap, 0.0f, 90.0f);
+			n.hideDelay = std::clamp(n.hideDelay, 0.0f, 60.0f);
+			n.posX = std::clamp(n.posX, 0.0f, 1.0f);
+			n.posY = std::clamp(n.posY, 0.0f, 1.0f);
+			n.size = std::clamp(n.size, 8.0f, 200.0f);
+			n.spacing = std::clamp(n.spacing, -20.0f, 200.0f);
+			n.thickness = std::clamp(n.thickness, 1.0f, 30.0f);
+			n.barLength = std::clamp(n.barLength, 10.0f, 600.0f);
+			n.barCurve = std::clamp(n.barCurve, -180.0f, 180.0f);
+			n.labelSize = std::clamp(n.labelSize, 6.0f, 60.0f);
 		}
 
 		template <class T>
@@ -111,6 +173,11 @@ namespace Config
 			try {
 				if constexpr (std::is_enum_v<T>) {
 					a_value = static_cast<T>(it->get<int>());
+				} else if constexpr (requires { std::tuple_size<T>::value; typename T::value_type; }) {
+					// lists that grew (3 needs before 2.2, now 5): what the file has, the defaults for the rest
+					for (std::size_t i = 0; i < std::min(a_value.size(), it->size()); ++i) {
+						a_value[i] = (*it)[i].template get<typename T::value_type>();
+					}
 				} else {
 					a_value = it->get<T>();
 				}
@@ -156,23 +223,14 @@ namespace Config
 			a_s.labelSize = std::clamp(a_s.labelSize, 6.0f, 60.0f);
 			a_s.smoothing = std::clamp(a_s.smoothing, 0.0f, 5.0f);
 
-			auto& n = a_s.needs;
-			n.visibility = static_cast<Visibility>(std::clamp(static_cast<int>(n.visibility), 0, 1));
-			n.style = static_cast<NeedStyle>(std::clamp(static_cast<int>(n.style), 0, 2));
-			n.marker = static_cast<NeedMarker>(std::clamp(static_cast<int>(n.marker), 0, 2));
-			n.arcRadius = std::clamp(n.arcRadius, 10.0f, 1000.0f);
-			n.arcStart = std::clamp(n.arcStart, -360.0f, 360.0f);
-			n.arcSpan = std::clamp(n.arcSpan, -360.0f, 360.0f);
-			n.arcGap = std::clamp(n.arcGap, 0.0f, 90.0f);
-			n.hideDelay = std::clamp(n.hideDelay, 0.0f, 60.0f);
-			n.posX = std::clamp(n.posX, 0.0f, 1.0f);
-			n.posY = std::clamp(n.posY, 0.0f, 1.0f);
-			n.size = std::clamp(n.size, 8.0f, 200.0f);
-			n.spacing = std::clamp(n.spacing, -20.0f, 200.0f);
-			n.thickness = std::clamp(n.thickness, 1.0f, 30.0f);
-			n.barLength = std::clamp(n.barLength, 10.0f, 600.0f);
-			n.barCurve = std::clamp(n.barCurve, -180.0f, 180.0f);
-			n.labelSize = std::clamp(n.labelSize, 6.0f, 60.0f);
+			ClampMeter(a_s.needs);
+			ClampMeter(a_s.stress);
+
+			auto& f = a_s.fear;
+			f.posX = std::clamp(f.posX, 0.0f, 1.0f);
+			f.posY = std::clamp(f.posY, 0.0f, 1.0f);
+			f.size = std::clamp(f.size, 8.0f, 200.0f);
+			f.labelSize = std::clamp(f.labelSize, 6.0f, 60.0f);
 		}
 	}
 
@@ -250,6 +308,16 @@ namespace Config
 		const bool enabled = settings.needs.enabled;
 		settings.needs = NeedsSettings{};
 		settings.needs.enabled = enabled;
+	}
+
+	void ResetStress()
+	{
+		const bool stress = settings.stress.enabled;
+		const bool fear = settings.fear.enabled;
+		settings.stress = StressDefaults();
+		settings.stress.enabled = stress;
+		settings.fear = FearSettings{};
+		settings.fear.enabled = fear;
 	}
 
 	void Apply(Preset a_preset)

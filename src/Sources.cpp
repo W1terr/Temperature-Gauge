@@ -22,10 +22,13 @@
 //   "nearHeat": { "global": "..." },          without "temperatureLevel": the warming up / cooling down chevrons come
 //   "trend": { "steadyWithin": 1, "fastFrom": 40 }   from the target vs the cold (cold units; two chevrons from
 //                                             "fastFrom" on when getting colder, near heat when warming up)
+//       or { "value": { ... } }               read from the mod: -2 cooling fast .. 2 near a heat source (use "map"
+//                                             to turn the mod's numbers into these); no warming up shown once warm
 //   "target": { "value": { "global": "..." }, "deadlyFrom": 600 }      the cold the area brings you to
 //          or { "level": { "script": { ... } }, "levelStages": [1, 4, 7, 10, 13] }
 //                                             a cold level; reaching levelStages[i] lets the cold go up to stage i + 1
 //   "hide": { "hudPaths": [ "_root..." ], "skyuiWidget": { "quest": "0x84F92D", "script": "_SHColdWidgetScript" } }
+//                                             the mod's own temperature icon (skyuiWidget may be a list)
 // }
 //
 // Values, conditions (enabled, nearHeat), stage names and the widget: see Defs.h.
@@ -55,14 +58,14 @@ namespace Temperature
 			Value                    nearHeat;
 			float                    steadyWithin{ 0.0f };
 			float                    fastFrom{ 0.0f };
+			Value                    trendValue;
 
 			Value                    targetValue;
 			std::optional<float>     deadlyFrom;
 			Value                    targetLevel;
 			std::vector<int>         levelStages;
 
-			std::vector<std::string> hudPaths;
-			Widget                   widget;
+			Hidden                   hidden;
 
 			bool On() const { return AllHold(enabled); }
 
@@ -148,6 +151,9 @@ namespace Temperature
 			const auto trend = j.value("trend", json::object());
 			s.steadyWithin = trend.value("steadyWithin", 0.0f);
 			s.fastFrom = trend.value("fastFrom", 0.0f);
+			if (trend.contains("value")) {
+				s.trendValue = ParseValue(trend["value"], plugin);
+			}
 			s.positions = j.value("positions", std::vector<float>{});
 			if (s.positions.size() != s.stages.size() + 2) {
 				s.positions = DefaultPositions(s.stages.size(), s.comfortableStages);
@@ -164,13 +170,7 @@ namespace Temperature
 					s.levelStages = t.value("levelStages", std::vector<int>{});
 				}
 			}
-			if (j.contains("hide")) {
-				const auto& h = j["hide"];
-				s.hudPaths = h.value("hudPaths", std::vector<std::string>{});
-				if (h.contains("skyuiWidget")) {
-					s.widget = ParseWidget(h["skyuiWidget"], plugin);
-				}
-			}
+			s.hidden.Parse(j, plugin);
 			std::string names;
 			for (const auto& n : s.stageNames) {
 				names += (names.empty() ? "" : ", ") + n;
@@ -223,6 +223,11 @@ namespace Temperature
 			if (byLevel) {
 				constexpr std::array kTrend{ 0, 2, 1, -1, -2 };
 				r.trend = level >= 0 && level < 5 ? kTrend[level] : 0;
+			} else if (a_source.trendValue.Valid()) {
+				r.trend = std::clamp(static_cast<int>(std::lround(a_source.trendValue.Get().value_or(0.0f))), -2, 2);
+				if (r.trend > 0 && cold <= 0.0f) {
+					r.trend = 0;  // warm already
+				}
 			} else if (target) {
 				const float diff = *target - cold;  // > 0: getting colder
 				if (diff > a_source.steadyWithin) {
@@ -271,13 +276,7 @@ namespace Temperature
 		std::string              name;
 		std::vector<std::string> paths;
 		for (auto& source : sources) {
-			if (source.widget.Valid()) {
-				source.widget.Refresh(source.name);
-			}
-			paths.insert(paths.end(), source.hudPaths.begin(), source.hudPaths.end());
-			if (!source.widget.root.empty()) {
-				paths.push_back(source.widget.root);
-			}
+			source.hidden.Collect(source.name, paths);
 			if (!reading && source.On()) {
 				reading = Read(source);
 				name = source.name;

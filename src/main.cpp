@@ -1,6 +1,8 @@
+#include "IHud.h"
 #include "Menus.h"
 #include "Needs.h"
 #include "Settings.h"
+#include "Stress.h"
 #include "Temperature.h"
 #include "UI.h"
 
@@ -17,7 +19,9 @@ namespace
 		}
 		Temperature::Init();
 		Needs::Init();
+		Stress::Init();
 		Menus::Register();
+		IHud::Register();
 		if (!UI::Register()) {
 			RE::DebugMessageBox("Temperature Gauge needs SKSE Menu Framework (version 3 or newer). The gauge is disabled.");
 		}

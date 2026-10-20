@@ -4,6 +4,7 @@
 #include "Needs.h"
 #include "NeedsGauge.h"
 #include "Settings.h"
+#include "Stress.h"
 #include "Temperature.h"
 #include "UI.h"
 
@@ -100,7 +101,7 @@ namespace UI
 			SeparatorText(T("General"));
 			Checkbox(Id("Show the gauge").c_str(), &s.enabled);
 			Checkbox(Id("Hide the vanilla temperature icon").c_str(), &s.hideVanillaIcon);
-			Hint("The survival mod's own temperature icon: Survival Mode's thermometer, SunHelm's cold widget, Frostfall's exposure meter");
+			Hint("The survival mod's own temperature icon: Survival Mode's thermometer, SunHelm's cold widget, Frostfall's exposure meter, Frostbite's meter");
 			static constexpr std::array visibilityNames{ "Always", "Only when not comfortable", "Never" };
 			SetNextItemWidth(260.0f);
 			EnumCombo("Show", s.visibility, visibilityNames);
@@ -109,7 +110,7 @@ namespace UI
 				Hint("How long you have to be warm or comfortable (and not getting colder) before the gauge fades out");
 			}
 			Checkbox(Id("Fade with the HUD").c_str(), &s.followHud);
-			Hint("Follows the HUD's opacity, e.g. Immersive HUD hiding it");
+			Hint("Follows the HUD's opacity, e.g. Immersive HUD hiding it. Immersive HUD SKSE has an entry for each group of gauges in its menu: TemperatureGauge, TemperatureGaugeNeeds, TemperatureGaugeStress");
 			SliderFloat(Id("Opacity").c_str(), &s.opacity, 0.05f, 1.0f, "%.2f");
 			SliderFloat(Id("Marker smoothing").c_str(), &s.smoothing, 0.0f, 3.0f, seconds);
 			Hint("Survival mods change your temperature in steps; the marker glides to the new value over this time");
@@ -216,10 +217,12 @@ namespace UI
 			const auto names = Needs::SourceNames();
 			const auto loaded = Needs::LoadedSources();
 			const auto readings = Needs::Current();
-			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue" };
+			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue", "Inebriation", "Weight" };
 			for (std::size_t i = 0; i < kNeedCount; ++i) {
 				if (readings[i]) {
 					Text("%s", std::format("{}: {} ({}, {:.0f}%)", T(kNeedNames[i]), T(readings[i]->stage.c_str()), names[i], readings[i]->fill * 100.0f).c_str());
+				} else if (i >= static_cast<std::size_t>(Need::kInebriation)) {
+					continue;  // only Realistic Needs and Diseases has them; no line without it
 				} else {
 					TextDisabled("%s", std::format("{}: {}", T(kNeedNames[i]), T("not tracked by a running survival mod")).c_str());
 				}
@@ -227,19 +230,153 @@ namespace UI
 			TextDisabled("%s", F("Supported here: {}", loaded.empty() ? T("none") : loaded.c_str()).c_str());
 		}
 
+		// Style, place and look of a group of meters (the needs gauges, or the stress gauge with a_stress)
+		void MeterLayout(Settings& s, NeedsSettings& n, bool a_stress)
+		{
+			const auto pixels = T("%.0f px");
+			static constexpr std::array needStyleNames{ "Rings", "Bars", "Arcs" };
+			static constexpr std::array stressStyleNames{ "Ring", "Bar", "Arc" };
+			SetNextItemWidth(260.0f);
+			if (a_stress) {
+				EnumCombo("Style", n.style, stressStyleNames);
+			} else {
+				EnumCombo("Style", n.style, needStyleNames);
+			}
+			if (n.style == NeedStyle::kArc) {
+				if (!a_stress) {
+					if (Button(Id("Put them on the temperature gauge's circle").c_str())) {
+						if (!PlaceNeedsOnTemperatureCircle(s)) {
+							arcHint = true;
+						}
+					}
+					Hint("Same circle as the bent temperature gauge (e.g. around a minimap), on the other side of it");
+					if (arcHint) {
+						TextDisabled("%s", T("The temperature gauge is straight; give it a curve first."));
+					}
+				}
+				SliderFloat(Id("Center X").c_str(), &n.posX, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Center Y").c_str(), &n.posY, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Radius").c_str(), &n.arcRadius, 10.0f, 600.0f, pixels);
+				SliderFloat(Id("Start").c_str(), &n.arcStart, -180.0f, 360.0f, "%.0f\xC2\xB0");
+				Hint(a_stress ? "Where the arc begins: degrees clockwise from 12 o'clock" : "Where the first arc begins: degrees clockwise from 12 o'clock");
+				SliderFloat(Id("Arc length").c_str(), &n.arcSpan, -180.0f, 180.0f, "%.0f\xC2\xB0");
+				Hint(a_stress ? "Degrees the arc covers; below 0 it goes counterclockwise" : "Degrees each arc covers; below 0 they go counterclockwise");
+				if (!a_stress) {
+					SliderFloat(Id("Gap").c_str(), &n.arcGap, 0.0f, 45.0f, "%.0f\xC2\xB0");
+					Hint("0 = one line, the needs end to end");
+					Checkbox(Id("Other order").c_str(), &n.arcReverse);
+					SameLine();
+					Checkbox(Id("Full end at the other end").c_str(), &n.arcFlip);
+				}
+				SliderFloat(Id("Thickness", "needsThickness").c_str(), &n.thickness, 1.0f, 20.0f, T("%.1f px"));
+			} else {
+				if (!a_stress) {
+					Checkbox(Id("Stacked (a column)").c_str(), &n.column);
+				}
+				SliderFloat(Id("Position X", "needsPosX").c_str(), &n.posX, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Position Y", "needsPosY").c_str(), &n.posY, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Size", "needsSize").c_str(), &n.size, 8.0f, 120.0f, pixels);
+				if (!a_stress) {
+					SliderFloat(Id("Spacing").c_str(), &n.spacing, -10.0f, 100.0f, pixels);
+				}
+				SliderFloat(Id("Thickness", "needsThickness").c_str(), &n.thickness, 1.0f, 20.0f, T("%.1f px"));
+			}
+			if (n.style == NeedStyle::kBar) {
+				SliderFloat(Id("Bar length").c_str(), &n.barLength, 10.0f, 400.0f, pixels);
+				SliderFloat(Id("Curve", "needsCurve").c_str(), &n.barCurve, -180.0f, 180.0f, "%.0f\xC2\xB0");
+				Hint("0 = a straight bar; below 0 it bends the other way");
+				if (!a_stress) {
+					Checkbox(Id("Full end at the other end").c_str(), &n.arcFlip);
+				}
+			}
+			if (a_stress) {
+				Checkbox(Id(n.style == NeedStyle::kRing ? "Fill up with stress" : "Calm end at the other end", "stressFlip").c_str(), &n.arcFlip);
+				Hint(n.style == NeedStyle::kRing ? "Off: the ring is full while calm and empties as the stress grows" :
+				                                   "Off: the calm end on the right (bars) or at the arc's start");
+			}
+			if (n.style != NeedStyle::kRing) {
+				static constexpr std::array needMarkerNames{ "Like the temperature gauge", "Arrow", "Line" };
+				SetNextItemWidth(260.0f);
+				EnumCombo("Marker", n.marker, needMarkerNames);
+				Checkbox(Id("Fade the ends", "needsFadeEnds").c_str(), &n.fadeEnds);
+				SameLine();
+			}
+			if (n.style != NeedStyle::kArc) {  // arcs have no icons, their colors tell them apart
+				Checkbox(Id(a_stress ? "Icon" : "Icons").c_str(), &n.icons);
+				SameLine();
+			}
+			Checkbox(Id("Marks between the stages").c_str(), &n.ticks);
+			SameLine();
+			Checkbox(Id("Pulse at the worst stages").c_str(), &n.pulseDanger);
+			Checkbox(Id("Show the stage name", "needsShowLabel").c_str(), &n.showLabel);
+			if (n.showLabel) {
+				SliderFloat(Id("Text size", "needsTextSize").c_str(), &n.labelSize, 8.0f, 40.0f, pixels);
+			}
+		}
+
+		void MeterColors(NeedsSettings& n, bool a_stress)
+		{
+			const bool byNeed = n.style != NeedStyle::kRing && n.colorByNeed;
+			if (n.style != NeedStyle::kRing) {
+				Checkbox(Id(a_stress ? "One color" : "A color per need").c_str(), &n.colorByNeed);
+				Hint(a_stress ? "Off: colored by stage like the temperature gauge's zones (its green and red shades, amber penalties)" :
+				                "Off: colored by stage like the temperature gauge's zones (its green and red shades, amber penalties, gold bonus)");
+			}
+			if (byNeed) {
+				if (a_stress) {
+					Color("Stress", "stressColor", n.needColors[0]);
+				} else {
+					Color("Hunger", "needColorHunger", n.needColors[0]);
+					SameLine();
+					Color("Thirst", "needColorThirst", n.needColors[1]);
+					SameLine();
+					Color("Fatigue", "needColorFatigue", n.needColors[2]);
+					SameLine();
+					Color("Inebriation", "needColorInebriation", n.needColors[3]);
+					SameLine();
+					Color("Weight", "needColorWeight", n.needColors[4]);
+				}
+				SameLine();
+			} else {
+				if (n.style == NeedStyle::kRing) {
+					Color(a_stress ? "Calm" : "Fine", "needFine", n.fine);
+					SameLine();
+				}
+				Color("Penalties", "needWarning", n.warning);
+				SameLine();
+				if (n.style == NeedStyle::kRing) {
+					Color("Worst stages", "needDanger", n.danger);
+					SameLine();
+				}
+				if (!a_stress) {
+					Color("Bonus", "needBonus", n.bonus);
+					Hint("Well Fed, Well Rested and the like");
+				}
+			}
+			if (n.style == NeedStyle::kRing) {
+				Color("Background", "needTrack", n.track);
+				SameLine();
+			}
+			if (n.style != NeedStyle::kArc) {
+				Color(a_stress ? "Icon" : "Icons", "needIcon", n.icon);
+			}
+			if (n.style != NeedStyle::kRing) {
+				TextDisabled("%s", T("The marker's color and size, the outline and the round ends come from the Settings page."));
+			}
+		}
+
 		void __stdcall RenderNeeds()
 		{
 			std::scoped_lock lock(Config::Lock());
 			auto&            s = Config::Get();
 			auto&            n = s.needs;
-			const auto       pixels = T("%.0f px");
 
 			RenderNeedsStatus();
 			TextWrapped("%s", T("Gauges for hunger, thirst and fatigue next to the temperature gauge. Survival Mode has hunger and fatigue, SunHelm all three; Frostfall has none of its own, so with Frostfall they come from the needs mod you run beside it."));
 
 			SeparatorText(T("General"));
 			Checkbox(Id("Show hunger, thirst and fatigue gauges").c_str(), &n.enabled);
-			Hint("While on, SunHelm's own hunger, thirst and fatigue icons are hidden");
+			Hint("While on, the survival mod's own hunger, thirst and fatigue icons are hidden (SunHelm, Realistic Needs and Diseases)");
 			if (!n.enabled) {
 				return;
 			}
@@ -248,6 +385,11 @@ namespace UI
 			Checkbox(Id("Thirst").c_str(), &n.show[1]);
 			SameLine();
 			Checkbox(Id("Fatigue").c_str(), &n.show[2]);
+			SameLine();
+			Checkbox(Id("Inebriation").c_str(), &n.show[3]);
+			SameLine();
+			Checkbox(Id("Weight").c_str(), &n.show[4]);
+			Hint("Inebriation and weight: Realistic Needs and Diseases");
 			static constexpr std::array needsVisibilityNames{ "Always", "Only when not comfortable" };
 			SetNextItemWidth(260.0f);
 			EnumCombo("Show", n.visibility, needsVisibilityNames);
@@ -258,101 +400,10 @@ namespace UI
 			TextDisabled("%s", T("Opacity, fading with the HUD, smoothing, outline and scale are shared with the temperature gauge."));
 
 			SeparatorText(T("Layout"));
-			static constexpr std::array needStyleNames{ "Rings", "Bars", "Arcs" };
-			SetNextItemWidth(260.0f);
-			EnumCombo("Style", n.style, needStyleNames);
-			if (n.style == NeedStyle::kArc) {
-				if (Button(Id("Put them on the temperature gauge's circle").c_str())) {
-					if (!PlaceNeedsOnTemperatureCircle(s)) {
-						arcHint = true;
-					}
-				}
-				Hint("Same circle as the bent temperature gauge (e.g. around a minimap), on the other side of it");
-				if (arcHint) {
-					TextDisabled("%s", T("The temperature gauge is straight; give it a curve first."));
-				}
-				SliderFloat(Id("Center X").c_str(), &n.posX, 0.0f, 1.0f, "%.3f");
-				SliderFloat(Id("Center Y").c_str(), &n.posY, 0.0f, 1.0f, "%.3f");
-				SliderFloat(Id("Radius").c_str(), &n.arcRadius, 10.0f, 600.0f, pixels);
-				SliderFloat(Id("Start").c_str(), &n.arcStart, -180.0f, 360.0f, "%.0f\xC2\xB0");
-				Hint("Where the first arc begins: degrees clockwise from 12 o'clock");
-				SliderFloat(Id("Arc length").c_str(), &n.arcSpan, -180.0f, 180.0f, "%.0f\xC2\xB0");
-				Hint("Degrees each arc covers; below 0 they go counterclockwise");
-				SliderFloat(Id("Gap").c_str(), &n.arcGap, 0.0f, 45.0f, "%.0f\xC2\xB0");
-				Hint("0 = one line, the needs end to end");
-				Checkbox(Id("Other order").c_str(), &n.arcReverse);
-				SameLine();
-				Checkbox(Id("Full end at the other end").c_str(), &n.arcFlip);
-				SliderFloat(Id("Thickness", "needsThickness").c_str(), &n.thickness, 1.0f, 20.0f, T("%.1f px"));
-			} else {
-				Checkbox(Id("Stacked (a column)").c_str(), &n.column);
-				SliderFloat(Id("Position X", "needsPosX").c_str(), &n.posX, 0.0f, 1.0f, "%.3f");
-				SliderFloat(Id("Position Y", "needsPosY").c_str(), &n.posY, 0.0f, 1.0f, "%.3f");
-				SliderFloat(Id("Size", "needsSize").c_str(), &n.size, 8.0f, 120.0f, pixels);
-				SliderFloat(Id("Spacing").c_str(), &n.spacing, -10.0f, 100.0f, pixels);
-				SliderFloat(Id("Thickness", "needsThickness").c_str(), &n.thickness, 1.0f, 20.0f, T("%.1f px"));
-			}
-			if (n.style == NeedStyle::kBar) {
-				SliderFloat(Id("Bar length").c_str(), &n.barLength, 10.0f, 400.0f, pixels);
-				SliderFloat(Id("Curve", "needsCurve").c_str(), &n.barCurve, -180.0f, 180.0f, "%.0f\xC2\xB0");
-				Hint("0 = a straight bar; below 0 it bends the other way");
-			}
-			if (n.style != NeedStyle::kRing) {
-				static constexpr std::array needMarkerNames{ "Like the temperature gauge", "Arrow", "Line" };
-				SetNextItemWidth(260.0f);
-				EnumCombo("Marker", n.marker, needMarkerNames);
-				Checkbox(Id("Fade the ends", "needsFadeEnds").c_str(), &n.fadeEnds);
-				SameLine();
-			}
-			if (n.style != NeedStyle::kArc) {  // arcs have no icons, their colors tell them apart
-				Checkbox(Id("Icons").c_str(), &n.icons);
-				SameLine();
-			}
-			Checkbox(Id("Marks between the stages").c_str(), &n.ticks);
-			SameLine();
-			Checkbox(Id("Pulse at the worst stages").c_str(), &n.pulseDanger);
-			Checkbox(Id("Show the stage name", "needsShowLabel").c_str(), &n.showLabel);
-			if (n.showLabel) {
-				SliderFloat(Id("Text size", "needsTextSize").c_str(), &n.labelSize, 8.0f, 40.0f, pixels);
-			}
+			MeterLayout(s, n, false);
 
 			SeparatorText(T("Colors"));
-			const bool byNeed = n.style != NeedStyle::kRing && n.colorByNeed;
-			if (n.style != NeedStyle::kRing) {
-				Checkbox(Id("A color per need").c_str(), &n.colorByNeed);
-				Hint("Off: colored by stage like the temperature gauge's zones (its green and red shades, amber penalties, gold bonus)");
-			}
-			if (byNeed) {
-				Color("Hunger", "needColorHunger", n.needColors[0]);
-				SameLine();
-				Color("Thirst", "needColorThirst", n.needColors[1]);
-				SameLine();
-				Color("Fatigue", "needColorFatigue", n.needColors[2]);
-				SameLine();
-			} else {
-				if (n.style == NeedStyle::kRing) {
-					Color("Fine", "needFine", n.fine);
-					SameLine();
-				}
-				Color("Penalties", "needWarning", n.warning);
-				SameLine();
-				if (n.style == NeedStyle::kRing) {
-					Color("Worst stages", "needDanger", n.danger);
-					SameLine();
-				}
-				Color("Bonus", "needBonus", n.bonus);
-				Hint("Well Fed, Well Rested and the like");
-			}
-			if (n.style == NeedStyle::kRing) {
-				Color("Background", "needTrack", n.track);
-				SameLine();
-			}
-			if (n.style != NeedStyle::kArc) {
-				Color("Icons", "needIcon", n.icon);
-			}
-			if (n.style != NeedStyle::kRing) {
-				TextDisabled("%s", T("The marker's color and size, the outline and the round ends come from the Settings page."));
-			}
+			MeterColors(n, false);
 
 			SeparatorText(T("Preview"));
 			Checkbox(Id("Try made up values").c_str(), &preview.needs);
@@ -368,6 +419,93 @@ namespace UI
 			}
 		}
 
+		void RenderStressStatus()
+		{
+			const auto r = Stress::Current();
+			const auto name = Stress::SourceName();
+			if (r.stress) {
+				Text("%s", F("Stress: {} ({:.0f} of {:.0f})", T(r.stress->stage.c_str()), r.stress->value, r.stress->max).c_str());
+			} else {
+				TextDisabled("%s", F("Stress: {}", T("off in the mod")).c_str());
+			}
+			if (!r.fears) {
+				TextDisabled("%s", F("Phobias: {}", T("off in the mod")).c_str());
+			} else {
+				std::string phobias;
+				for (const auto& phobia : r.phobias) {
+					phobias += (phobias.empty() ? "" : ", ") + phobia;
+				}
+				Text("%s", F("Phobias: {}", phobias.empty() ? T("none") : phobias.c_str()).c_str());
+				for (const auto& fear : r.afraid) {
+					Text("%s", F("Afraid now: {}", fear).c_str());
+				}
+			}
+			TextDisabled("%s", F("Reading from: {}", name.empty() ? T("none") : name.c_str()).c_str());
+		}
+
+		void __stdcall RenderStress()
+		{
+			std::scoped_lock lock(Config::Lock());
+			auto&            s = Config::Get();
+			auto&            n = s.stress;
+			auto&            f = s.fear;
+			const auto       pixels = T("%.0f px");
+
+			RenderStressStatus();
+			TextWrapped("%s", T("A gauge for Stress and Fear's stress (calm, minor .. critical combat stress) and an eye with the phobia's name while you face what you fear."));
+
+			SeparatorText(T("Stress gauge"));
+			Checkbox(Id("Show the stress gauge").c_str(), &n.enabled);
+			if (n.enabled) {
+				static constexpr std::array stressVisibilityNames{ "Always", "Only when stressed" };
+				SetNextItemWidth(260.0f);
+				EnumCombo("Show", n.visibility, stressVisibilityNames);
+				if (n.visibility == Visibility::kNotComfortable) {
+					SliderFloat(Id("Hide after", "needsHideAfter").c_str(), &n.hideDelay, 0.0f, 30.0f, T("%.1f s"));
+					Hint("The gauge fades out once you have had no stress for this long");
+				}
+				MeterLayout(s, n, true);
+				SeparatorText(T("Stress colors"));
+				MeterColors(n, true);
+			}
+
+			SeparatorText(T("Fear"));
+			Checkbox(Id("Show the fear indicator").c_str(), &f.enabled);
+			Hint("While one of your phobias works: in a fight with what you fear");
+			if (f.enabled) {
+				SliderFloat(Id("Position X", "fearPosX").c_str(), &f.posX, 0.0f, 1.0f, "%.3f");
+				SliderFloat(Id("Position Y", "fearPosY").c_str(), &f.posY, 0.0f, 1.0f, "%.3f");
+				Checkbox(Id("Eye", "fearIcon").c_str(), &f.icon);
+				SameLine();
+				Checkbox(Id("Name of the fear").c_str(), &f.showName);
+				SameLine();
+				Checkbox(Id("Pulse", "fearPulse").c_str(), &f.pulse);
+				if (f.icon) {
+					SliderFloat(Id("Size", "fearSize").c_str(), &f.size, 8.0f, 120.0f, pixels);
+				}
+				if (f.showName) {
+					SliderFloat(Id("Text size", "fearTextSize").c_str(), &f.labelSize, 8.0f, 40.0f, pixels);
+				}
+				Checkbox(Id("Show your phobias when not afraid").c_str(), &f.showPhobias);
+				Hint("Faint, under the eye");
+				Color("Eye", "fearColor", f.color);
+			}
+			TextDisabled("%s", T("Opacity, fading with the HUD, smoothing, outline and scale are shared with the temperature gauge."));
+
+			SeparatorText(T("Preview"));
+			Checkbox(Id("Try made up values", "stressPreview").c_str(), &preview.stress);
+			if (preview.stress) {
+				SameLine();
+				Checkbox(Id("Sweep", "stressSweep").c_str(), &preview.stressSweep);
+			}
+
+			Spacing();
+			Separator();
+			if (Button(Id("Reset the stress gauge and the fear indicator to the defaults").c_str())) {
+				Config::ResetStress();
+			}
+		}
+
 		void __stdcall RenderLanguages();
 
 		// The sidebar pages: English name (the translation key), page, name it has in the framework now
@@ -377,11 +515,7 @@ namespace UI
 			SKSEMenuFramework::Model::RenderFunction render;
 			std::string                              shown;
 		};
-		std::array pages{
-			SidebarPage{ "Settings", RenderSettings, {} },
-			SidebarPage{ "Needs", RenderNeeds, {} },
-			SidebarPage{ "Languages", RenderLanguages, {} },
-		};
+		std::vector<SidebarPage> pages;  // filled once in Register (Stress and Fear only with a stress mod)
 		std::atomic<bool> pageNamesOutdated{ false };
 
 		// exported by SKSE Menu Framework 3.8+, not in its header we use: renames a section or page at runtime
@@ -458,6 +592,11 @@ namespace UI
 		}
 		logs::info("SKSE Menu Framework {} found", SKSEMenuFramework::GetMenuFrameworkVersion());
 		SKSEMenuFramework::SetSection(kSection);
+		pages = { { "Settings", RenderSettings, {} }, { "Needs", RenderNeeds, {} } };
+		if (Stress::Available()) {
+			pages.push_back({ "Stress and Fear", RenderStress, {} });
+		}
+		pages.push_back({ "Languages", RenderLanguages, {} });
 		for (auto& page : pages) {
 			page.shown = T(page.english);
 			SKSEMenuFramework::AddSectionItem(page.shown, page.render);

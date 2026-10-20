@@ -1,0 +1,48 @@
+{
+	"name": "Stress and Fear",
+	"plugin": "Stress and Fear.esp",
+	"priority": 0,
+	"stress": {
+		"enabled": { "global": "0x8A5", "_": "Stress_Enabled" },
+		"value": { "global": "0x801", "_": "Stress_Total, 0 .. 100" },
+		"max": 100,
+		"stages": [ 25.001, 45.001, 65.001, 85.001 ],
+		"_stages": "its combat stress spells start above 25, 45, 65 and 85 (Stress_*CombatStress_Workaround conditions)",
+		"stageNames": [
+			"Calm",
+			{ "spell": "0x89B", "fallback": "Minor Combat Stress" },
+			{ "spell": "0x89C", "fallback": "Moderate Combat Stress" },
+			{ "spell": "0x89D", "fallback": "Severe Combat Stress" },
+			{ "spell": "0x89E", "fallback": "Critical Combat Stress" }
+		],
+		"comfortableStages": 1,
+		"dangerStage": 3
+	},
+	"fearsEnabled": { "global": "0x8A6", "_": "Stress_FearEnabled" },
+	"fears": [
+		{ "spell": "0x817", "effect": "0x816", "_": "Wolves" },
+		{ "spell": "0x824", "effect": "0x820", "_": "Dragons" },
+		{ "spell": "0x82F", "effect": "0x82E", "_": "Vampires" },
+		{ "spell": "0x833", "effect": "0x832", "_": "Mages" },
+		{ "spell": "0x839", "effect": "0x838", "_": "Undead" },
+		{ "spell": "0x83E", "effect": "0x83D", "_": "Bandits" },
+		{ "spell": "0x843", "effect": "0x842", "_": "Falmer" },
+		{ "spell": "0x848", "effect": "0x847", "_": "Forsworn" },
+		{ "spell": "0x84D", "effect": "0x84C", "_": "Hagravens" },
+		{ "spell": "0x852", "effect": "0x851", "_": "Ghosts" },
+		{ "spell": "0x857", "effect": "0x856", "_": "Thalmor" },
+		{ "spell": "0x85C", "effect": "0x85B", "_": "Bears" },
+		{ "spell": "0x861", "effect": "0x860", "_": "Spiders" },
+		{ "spell": "0x866", "effect": "0x865", "_": "Chaurus" },
+		{ "spell": "0x86B", "effect": "0x86A", "_": "Sabre Cats" },
+		{ "spell": "0x870", "effect": "0x86F", "_": "Ice Wraiths" },
+		{ "spell": "0x898", "effect": "0x874", "_": "Werewolves" },
+		{ "spell": "0x878", "effect": "0x877", "_": "Trolls" },
+		{ "spell": "0x87E", "effect": "0x87D", "_": "Dremora" },
+		{ "spell": "0x883", "effect": "0x882", "_": "Atronachs" },
+		{ "spell": "0x888", "effect": "0x887", "_": "Dwarven Automatons" },
+		{ "spell": "0x88D", "effect": "0x88C", "_": "Giants" },
+		{ "spell": "0x892", "effect": "0x891", "_": "Spriggans" },
+		{ "spell": "0x897", "effect": "0x896", "_": "Wispmothers" }
+	]
+}
