@@ -217,12 +217,12 @@ namespace UI
 			const auto names = Needs::SourceNames();
 			const auto loaded = Needs::LoadedSources();
 			const auto readings = Needs::Current();
-			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue", "Inebriation", "Weight" };
+			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue", "Inebriation", "Weight", "Vitality" };
 			for (std::size_t i = 0; i < kNeedCount; ++i) {
 				if (readings[i]) {
 					Text("%s", std::format("{}: {} ({}, {:.0f}%)", T(kNeedNames[i]), T(readings[i]->stage.c_str()), names[i], readings[i]->fill * 100.0f).c_str());
 				} else if (i >= static_cast<std::size_t>(Need::kInebriation)) {
-					continue;  // only Realistic Needs and Diseases has them; no line without it
+					continue;  // only some mods have them (Realistic Needs and Diseases, Last Seed); no line without them
 				} else {
 					TextDisabled("%s", std::format("{}: {}", T(kNeedNames[i]), T("not tracked by a running survival mod")).c_str());
 				}
@@ -335,6 +335,8 @@ namespace UI
 					Color("Inebriation", "needColorInebriation", n.needColors[3]);
 					SameLine();
 					Color("Weight", "needColorWeight", n.needColors[4]);
+					SameLine();
+					Color("Vitality", "needColorVitality", n.needColors[5]);
 				}
 				SameLine();
 			} else {
@@ -389,7 +391,9 @@ namespace UI
 			Checkbox(Id("Inebriation").c_str(), &n.show[3]);
 			SameLine();
 			Checkbox(Id("Weight").c_str(), &n.show[4]);
-			Hint("Inebriation and weight: Realistic Needs and Diseases");
+			SameLine();
+			Checkbox(Id("Vitality").c_str(), &n.show[5]);
+			Hint("Inebriation: Realistic Needs and Diseases, Last Seed. Weight: Realistic Needs and Diseases. Vitality: Last Seed.");
 			static constexpr std::array needsVisibilityNames{ "Always", "Only when not comfortable" };
 			SetNextItemWidth(260.0f);
 			EnumCombo("Show", n.visibility, needsVisibilityNames);

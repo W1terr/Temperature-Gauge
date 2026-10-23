@@ -55,6 +55,10 @@ namespace Defs
 	std::vector<Value> ParseStages(const json& a_parent, const std::string& a_plugin);
 	std::vector<float> GetStages(const std::vector<Value>& a_stages);
 
+	// whether a definition is for the loaded plugin: it's loaded and, with "light": true / false, is (isn't) flagged
+	// ESL (Frostfall 2026 and Last Seed 2026 have ESL builds with renumbered forms); logs why not as "<a_what>: ..."
+	bool PluginLoaded(const json& a_definition, const std::string& a_plugin, const std::string& a_what);
+
 	// "replaces": a definition's "name" or a list of them, left out while this one is loaded (Survival Mode Improved
 	// takes over Survival Mode's globals)
 	std::vector<std::string> ParseReplaces(const json& a_json);
@@ -104,11 +108,13 @@ namespace Defs
 	// "skyuiWidget": { "quest": "<id>", "script": "<class>" } or a list of them
 	std::vector<Widget> ParseWidgets(const json& a_json, const std::string& a_plugin);
 
-	// "hide": { "hudPaths": [...], "skyuiWidget": ... } of a definition: the HUD clips of its own icons
+	// "hide": { "hudPaths": [...], "skyuiWidget": ..., "smfHud": ... } of a definition: the HUD clips of its own icons
+	// and the SKSE plugins whose SKSE Menu Framework HUD to hide (see SmfHuds.h)
 	struct Hidden
 	{
 		std::vector<std::string> hudPaths;
 		std::vector<Widget>      widgets;
+		std::vector<std::string> smfHuds;  // DLL names
 
 		void Parse(const json& a_definition, const std::string& a_plugin);
 

@@ -248,6 +248,20 @@ namespace Defs
 		return stages;
 	}
 
+	bool PluginLoaded(const json& a_definition, const std::string& a_plugin, const std::string& a_what)
+	{
+		const auto file = RE::TESDataHandler::GetSingleton()->LookupModByName(a_plugin);
+		if (!file) {
+			logs::info("{}: {} isn't loaded, skipped", a_what, a_plugin);
+			return false;
+		}
+		if (a_definition.contains("light") && a_definition["light"].get<bool>() != file->IsLight()) {
+			logs::info("{}: {} is {}an ESL build, skipped (another definition is for it)", a_what, a_plugin, file->IsLight() ? "" : "not ");
+			return false;
+		}
+		return true;
+	}
+
 	std::vector<std::string> ParseReplaces(const json& a_json)
 	{
 		std::vector<std::string> names;
@@ -337,6 +351,12 @@ namespace Defs
 		hudPaths = h.value("hudPaths", std::vector<std::string>{});
 		if (h.contains("skyuiWidget")) {
 			widgets = ParseWidgets(h["skyuiWidget"], a_plugin);
+		}
+		if (h.contains("smfHud")) {
+			const auto& huds = h["smfHud"];
+			for (const auto& hud : huds.is_array() ? huds : json::array({ huds })) {
+				smfHuds.push_back(hud.at("dll").get<std::string>());
+			}
 		}
 	}
 

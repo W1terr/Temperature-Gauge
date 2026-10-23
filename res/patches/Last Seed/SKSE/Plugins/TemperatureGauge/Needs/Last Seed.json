@@ -1,0 +1,113 @@
+{
+	"name": "Last Seed",
+	"description": "Shows Last Seed's hunger, thirst and fatigue (Full / Quenched / Rested .. Starving / Severely Parched / Severely Exhausted, with Well Rested and the other sleep bonuses), alcohol (Sober .. Very Drunk) and vitality (Peak Condition .. Dying) on the needs gauges and hides its meters of the needs shown. Last Seed 2026 (regular and ESL build): hides its HUD bars while a need of it is shown (its start-up logo and food freshness bar stay).",
+	"plugin": "LastSeed.esp",
+	"light": false,
+	"priority": 10,
+	"enabled": { "global": "0x00B162", "atLeast": 2, "_": "LastSeedRunning (1 = stopped, 2 = running)" },
+	"hunger": {
+		"enabled": { "global": "0x007073", "atLeast": 2, "_": "_Seed_Setting_SystemEnabled_Hunger" },
+		"value": { "global": "0x0029CD", "_": "_Seed_AttributeHunger (0 .. 120)" },
+		"max": 120,
+		"stages": [ 20, 40, 60, 80, 100 ],
+		"stageNames": [
+			{ "spell": "0x0034B0", "fallback": "Full" },
+			{ "spell": "0x0034B4", "fallback": "Content" },
+			{ "spell": "0x0034B8", "fallback": "Hungry" },
+			{ "spell": "0x0034BC", "fallback": "Very Hungry" },
+			{ "spell": "0x0034C0", "fallback": "Ravenous" },
+			{ "spell": "0x0034C4", "fallback": "Starving" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonusStages": 1,
+		"hide": { "skyuiWidget": { "quest": "0x003F99", "script": "_Seed_Meter", "_": "_Seed_HungerMeterQuest" } }
+	},
+	"thirst": {
+		"enabled": { "global": "0x007074", "atLeast": 2, "_": "_Seed_Setting_SystemEnabled_Thirst" },
+		"value": { "global": "0x0029CE", "_": "_Seed_AttributeThirst (0 .. 120)" },
+		"max": 120,
+		"stages": [ 20, 40, 60, 80, 100 ],
+		"stageNames": [
+			{ "spell": "0x005A90", "fallback": "Quenched" },
+			{ "spell": "0x005A92", "fallback": "Refreshed" },
+			{ "spell": "0x005A94", "fallback": "Thirsty" },
+			{ "spell": "0x005A96", "fallback": "Very Thirsty" },
+			{ "spell": "0x005A98", "fallback": "Parched" },
+			{ "spell": "0x005A9A", "fallback": "Severely Parched" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonusStages": 1,
+		"hide": { "skyuiWidget": { "quest": "0x004A5E", "script": "_Seed_Meter", "_": "_Seed_ThirstMeterQuest" } }
+	},
+	"fatigue": {
+		"enabled": { "global": "0x007075", "atLeast": 2, "_": "_Seed_Setting_SystemEnabled_Fatigue" },
+		"value": { "global": "0x0029CF", "_": "_Seed_AttributeFatigue (0 .. 120)" },
+		"max": 120,
+		"stages": [ 20, 40, 60, 80, 100 ],
+		"stageNames": [
+			{ "spell": "0x005A9C", "fallback": "Rested" },
+			{ "spell": "0x005A9E", "fallback": "Sharp" },
+			{ "spell": "0x005AA0", "fallback": "Tired" },
+			{ "spell": "0x005AA2", "fallback": "Very Tired" },
+			{ "spell": "0x005AA4", "fallback": "Exhausted" },
+			{ "spell": "0x005AA6", "fallback": "Severely Exhausted" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"bonusStages": 1,
+		"bonus": [
+			{ "when": { "playerHasSpell": "0x1BDD22" }, "name": { "spell": "0x1BDD22", "fallback": "Well Rested" } },
+			{ "when": { "playerHasSpell": "0x1BDD23" }, "name": { "spell": "0x1BDD23", "fallback": "Lover's Comfort" } },
+			{ "when": { "playerHasSpell": "0x1BDD24" }, "name": { "spell": "0x1BDD24", "fallback": "Father's Love" } },
+			{ "when": { "playerHasSpell": "0x1BDD25" }, "name": { "spell": "0x1BDD25", "fallback": "Mother's Love" } },
+			{ "when": { "playerHasSpell": "0x1BDD20" }, "name": { "spell": "0x1BDD20", "fallback": "Rested" } }
+		],
+		"hide": { "skyuiWidget": { "quest": "0x004FC1", "script": "_Seed_Meter", "_": "_Seed_FatigueMeterQuest" } }
+	},
+	"inebriation": {
+		"enabled": { "global": "0x01082F", "atLeast": 2, "_": "_Seed_Setting_AlcoholSystemEnabled" },
+		"value": { "global": "0x010830", "_": "_Seed_AttributeDrunk (0 .. 120, passing out at 100)" },
+		"max": 100,
+		"stages": [ 20, 40, 60, 80 ],
+		"stageNames": [
+			"Sober",
+			{ "spell": "0x01954A", "fallback": "Relaxed" },
+			{ "spell": "0x01954B", "fallback": "Tipsy" },
+			{ "spell": "0x01954C", "fallback": "Drunk" },
+			{ "spell": "0x01954D", "fallback": "Very Drunk" }
+		],
+		"comfortableStages": 2,
+		"dangerStage": 4,
+		"fillsUp": true,
+		"_": "no meter of its own"
+	},
+	"vitality": {
+		"enabled": { "global": "0x007076", "atLeast": 2, "_": "_Seed_Setting_SystemEnabled_Vitality" },
+		"value": {
+			"global": "0x004FC4",
+			"map": [ [ 0, 160 ], [ 160, 0 ] ],
+			"_": "_Seed_AttributeVitality, 160 = peak condition .. 0 = dying, turned around (0 = the best)"
+		},
+		"max": 160,
+		"stages": [ 20, 40, 60, 80, 100, 120, 140 ],
+		"stageNames": [
+			{ "spell": "0x00F266", "fallback": "Peak Condition" },
+			{ "spell": "0x00F264", "fallback": "Vigorous" },
+			{ "spell": "0x00F262", "fallback": "Very Healthy" },
+			{ "spell": "0x00F260", "fallback": "Healthy" },
+			{ "spell": "0x00F7D3", "fallback": "Drained" },
+			{ "spell": "0x00F25C", "fallback": "Weakened" },
+			{ "spell": "0x00F259", "fallback": "Ruined" },
+			{ "spell": "0x00F258", "fallback": "Dying" }
+		],
+		"comfortableStages": 4,
+		"dangerStage": 6,
+		"bonusStages": 3,
+		"hide": { "skyuiWidget": { "quest": "0x004FC3", "script": "_Seed_Meter", "_": "_Seed_VitalityMeterQuest" } }
+	},
+	"hide": {
+		"smfHud": { "dll": "LastSeed", "keep": [ 0.32, 0.22, 0.68, 0.49 ], "_": "Last Seed 2026's bars; keep = its start-up logo" }
+	}
+}

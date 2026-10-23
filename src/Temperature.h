@@ -32,4 +32,7 @@ namespace Temperature
 
 	// HUD clips of the survival mods' own temperature icons (to hide)
 	std::vector<std::string> IconPaths();
+
+	// SKSE plugins whose own SKSE Menu Framework HUD the gauge stands in for: the shown mod's (Frostfall 2026)
+	std::vector<std::string> SmfHuds();
 }

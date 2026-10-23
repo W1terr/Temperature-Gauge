@@ -1,7 +1,8 @@
 {
 	"name": "Frostfall",
-	"description": "Shows Frostfall's exposure (Warm .. Freezing to Death) on the gauge and hides Frostfall's exposure meter (the wetness meter stays). Needs Frostfall running with exposure turned on.",
+	"description": "Shows Frostfall's exposure (Warm .. Freezing to Death) on the gauge and hides Frostfall's exposure meter (the wetness meter stays). Frostfall 2026 (regular and ESL build): hides its HUD bars while the gauge shows Frostfall (its start-up logo and settings page preview stay). Needs Frostfall running with exposure turned on.",
 	"plugin": "Frostfall.esp",
+	"light": false,
 	"priority": 10,
 	"enabled": [
 		{ "global": "0x06DCFB", "atLeast": 2, "_": "FrostfallRunning (1 = stopped, 2 = running)" },
@@ -17,6 +18,7 @@
 	"nearHeat": { "global": "0x064AFD", "atLeast": 2, "_": "_Frost_NearFire (1 = no, 2 = yes)" },
 	"trend": { "steadyWithin": 1, "fastFrom": 40 },
 	"hide": {
-		"skyuiWidget": { "quest": "0x05CDFD", "script": "_Frost_Meter", "_": "_Frost_ExposureMeterQuest" }
+		"skyuiWidget": { "quest": "0x05CDFD", "script": "_Frost_Meter", "_": "_Frost_ExposureMeterQuest" },
+		"smfHud": { "dll": "Frostfall", "keep": [ 0.32, 0.22, 0.68, 0.44 ], "_": "Frostfall 2026's bars; keep = its start-up logo" }
 	}
 }

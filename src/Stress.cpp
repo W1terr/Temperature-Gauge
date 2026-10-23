@@ -74,8 +74,7 @@ namespace Stress
 			Source        s;
 			s.name = j.value("name", a_file.stem().string());
 			const auto plugin = j.at("plugin").get<std::string>();
-			if (!RE::TESDataHandler::GetSingleton()->LookupModByName(plugin)) {
-				logs::info("{} stress: {} isn't loaded, skipped", s.name, plugin);
+			if (!PluginLoaded(j, plugin, s.name + " stress")) {
 				return std::nullopt;
 			}
 			logs::info("{} stress ({})", s.name, a_file.filename().string());

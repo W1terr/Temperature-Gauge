@@ -1,0 +1,72 @@
+{
+	"name": "Frostfall",
+	"plugin": "Frostfall.esp",
+	"light": true,
+	"priority": 10,
+	"enabled": [
+		{
+			"global": "0x000A9A",
+			"atLeast": 2,
+			"_": "FrostfallRunning (1 = stopped, 2 = running)"
+		},
+		{
+			"global": "0x000A47",
+			"atLeast": 2,
+			"_": "_Frost_Setting_ExposureOn (1 = off, 2 = on)"
+		}
+	],
+	"cold": {
+		"global": "0x000800",
+		"_": "_Frost_AttributeExposure"
+	},
+	"max": 120,
+	"stages": [
+		20,
+		40,
+		60,
+		80,
+		100
+	],
+	"stageNames": [
+		"Warm",
+		"Comfortable",
+		"Chilly",
+		"Very Cold",
+		"Freezing",
+		"Freezing to Death"
+	],
+	"comfortableStages": 2,
+	"dangerStage": 4,
+	"target": {
+		"value": {
+			"global": "0x000AF1",
+			"_": "_Frost_ExposureTarget"
+		}
+	},
+	"nearHeat": {
+		"global": "0x000A0D",
+		"atLeast": 2,
+		"_": "_Frost_NearFire (1 = no, 2 = yes)"
+	},
+	"trend": {
+		"steadyWithin": 1,
+		"fastFrom": 40
+	},
+	"hide": {
+		"skyuiWidget": {
+			"quest": "0x00097F",
+			"script": "_Frost_Meter",
+			"_": "_Frost_ExposureMeterQuest"
+		},
+		"smfHud": {
+			"dll": "Frostfall",
+			"keep": [
+				0.32,
+				0.22,
+				0.68,
+				0.44
+			],
+			"_": "Frostfall 2026's bars; keep = its start-up logo"
+		}
+	}
+}

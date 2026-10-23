@@ -39,6 +39,7 @@ namespace UI
 			kBolt,
 			kBottle,
 			kDumbbell,
+			kHeart,
 		};
 
 		// one gauge of a group: what it shows and how
@@ -193,6 +194,19 @@ namespace UI
 			}
 		}
 
+		// vitality: a heart, two lobes meeting in a point at the bottom
+		void Heart(ImDrawList* a_list, ImVec2 a_c, float a_half, ImU32 a_fill, ImU32 a_outline, float a_border)
+		{
+			constexpr float kR = 0.50f;  // the lobes, meeting at the dip (0, -0.47)
+			std::array<ImVec2, 33> pts;
+			std::size_t            n = 0;
+			pts[n++] = { 0.0f, 0.96f };                                                  // the point
+			CirclePoints(pts, n, 16, { -0.47f, -0.30f }, kR, kPi * 0.78f, kPi * 1.89f);  // the left lobe, up to the dip
+			CirclePoints(pts, n, 16, { 0.47f, -0.30f }, kR, kPi * 1.11f, kPi * 2.22f);   // the right lobe, down again
+			Place(pts, a_c, a_half);
+			FillShape(a_list, pts, a_fill, a_outline, a_border);
+		}
+
 		void Icon(MeterIcon a_icon, ImDrawList* a_list, ImVec2 a_c, float a_half, ImU32 a_fill, ImU32 a_outline, float a_border)
 		{
 			switch (a_icon) {
@@ -213,6 +227,9 @@ namespace UI
 				break;
 			case MeterIcon::kDumbbell:
 				Dumbbell(a_list, a_c, a_half, a_fill, a_outline, a_border);
+				break;
+			case MeterIcon::kHeart:
+				Heart(a_list, a_c, a_half, a_fill, a_outline, a_border);
 				break;
 			}
 		}
@@ -253,15 +270,16 @@ namespace UI
 
 		NeedReadings Demo(float a_time, bool a_sweep)
 		{
-			// a fed, a thirsty, an exhausted, a drunk and a muscular one; sweeping: all of them going round
+			// a fed, a thirsty, an exhausted, a drunk, a muscular and a healthy one; sweeping: all of them going round
 			static constexpr std::array<std::array<const char*, 3>, kNeedCount> kNames{ {
 				{ "Satisfied", "Hungry", "Starving" },
 				{ "Quenched", "Thirsty", "Dehydrated" },
 				{ "Rested", "Tired", "Exhausted" },
 				{ "Sober", "Drunk", "Wasted" },
 				{ "Muscular", "Wiry", "Skinny" },
+				{ "Healthy", "Drained", "Dying" },
 			} };
-			constexpr std::array kFills{ 0.85f, 0.45f, 0.12f, 0.55f, 1.0f };
+			constexpr std::array kFills{ 0.85f, 0.45f, 0.12f, 0.55f, 1.0f, 0.7f };
 			NeedReadings         r;
 			for (std::size_t i = 0; i < kNeedCount; ++i) {
 				NeedReading n;
@@ -703,7 +721,8 @@ namespace UI
 		}
 
 		// needs the mod doesn't track (or that are switched off) leave no gap
-		static constexpr std::array kIcons{ MeterIcon::kApple, MeterIcon::kDrop, MeterIcon::kMoon, MeterIcon::kBottle, MeterIcon::kDumbbell };
+		static constexpr std::array kIcons{ MeterIcon::kApple, MeterIcon::kDrop, MeterIcon::kMoon, MeterIcon::kBottle, MeterIcon::kDumbbell,
+			MeterIcon::kHeart };
 		std::array<Meter, kNeedCount> meters{};
 		std::size_t                   count = 0;
 		for (std::size_t i = 0; i < kNeedCount; ++i) {

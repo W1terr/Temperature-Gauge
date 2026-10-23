@@ -28,8 +28,11 @@ def version(target: str) -> str:
 
 
 def patch_info(folder: Path) -> tuple[str, str]:
-    """description and plugin of a patch folder, from its temperature definition (Sources), else any definition"""
-    source = next(folder.rglob("Sources/*.json"), None) or next(folder.rglob("*.json"))
+    """description and plugin of a patch folder, from its temperature definition (Sources), else any definition; not
+    from the ESL build's ("light": true, no description)"""
+    def regular(paths):
+        return [p for p in sorted(paths) if not json.loads(p.read_text(encoding="utf-8")).get("light", False)]
+    source = next(iter(regular(folder.rglob("Sources/*.json")) or regular(folder.rglob("*.json"))))
     data = json.loads(source.read_text(encoding="utf-8"))
     return data.get("description", f"Support for {folder.name}."), data["plugin"]
 

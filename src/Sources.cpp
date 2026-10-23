@@ -96,6 +96,7 @@ namespace Temperature
 		std::optional<Reading>   current;
 		std::string              currentName;
 		std::vector<std::string> iconPaths;
+		std::vector<std::string> smfHuds;
 
 		// even bands: the comfortable stages share 0.75 .. 0 (the warmest stays below the hot zone), the others -1 .. 0
 		std::vector<float> DefaultPositions(std::size_t a_stages, int a_comfortable)
@@ -119,8 +120,7 @@ namespace Temperature
 			Source        s;
 			s.name = j.value("name", a_file.stem().string());
 			const auto plugin = j.at("plugin").get<std::string>();
-			if (!RE::TESDataHandler::GetSingleton()->LookupModByName(plugin)) {
-				logs::info("{}: {} isn't loaded, skipped", s.name, plugin);
+			if (!PluginLoaded(j, plugin, s.name)) {
 				return std::nullopt;
 			}
 			logs::info("{} ({})", s.name, a_file.filename().string());
@@ -275,17 +275,20 @@ namespace Temperature
 		std::optional<Reading>   reading;
 		std::string              name;
 		std::vector<std::string> paths;
+		std::vector<std::string> huds;
 		for (auto& source : sources) {
 			source.hidden.Collect(source.name, paths);
 			if (!reading && source.On()) {
 				reading = Read(source);
 				name = source.name;
+				huds = source.hidden.smfHuds;
 			}
 		}
 		std::scoped_lock l(lock);
 		current = std::move(reading);
 		currentName = std::move(name);
 		iconPaths = std::move(paths);
+		smfHuds = std::move(huds);
 	}
 
 	std::optional<Reading> Current()
@@ -313,5 +316,11 @@ namespace Temperature
 	{
 		std::scoped_lock l(lock);
 		return iconPaths;
+	}
+
+	std::vector<std::string> SmfHuds()
+	{
+		std::scoped_lock l(lock);
+		return smfHuds;
 	}
 }

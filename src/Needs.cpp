@@ -11,10 +11,11 @@
 //   "replaces": "Survival Mode",              optional, definitions (by "name") left out while this one is loaded
 //   "priority": 10,                           with several mods running a need, the highest priority is shown
 //   "enabled": { "global": "0x02EB63" },      the mod runs (left out: always); a list = all of them
-//   "hunger": { ... },                        also "thirst", "fatigue", "inebriation" and "weight", a meter each (see
-//                                             Meter.h); a need left out isn't in the mod
+//   "hunger": { ... },                        also "thirst", "fatigue", "inebriation", "weight" and "vitality", a meter
+//                                             each (see Meter.h); a need left out isn't in the mod
 //   "hide": { "hudPaths": [ "_root..." ], "skyuiWidget": { "quest": "0x12BDC1", "script": "_SHWidgetScript" } }
-//                                             the mod's own need icons (skyuiWidget may be a list)
+//                                             the mod's own need icons (skyuiWidget may be a list); "smfHud": its SKSE
+//                                             Menu Framework HUD (see SmfHuds.h), hidden while a need of it is shown
 // }
 //
 // Values, conditions and stage names: see Defs.h.
@@ -25,7 +26,7 @@ namespace Needs
 		using namespace Defs;
 
 		constexpr auto                                kFolder = "Data/SKSE/Plugins/TemperatureGauge/Needs";
-		constexpr std::array<const char*, kNeedCount> kKeys{ "hunger", "thirst", "fatigue", "inebriation", "weight" };
+		constexpr std::array<const char*, kNeedCount> kKeys{ "hunger", "thirst", "fatigue", "inebriation", "weight", "vitality" };
 
 		struct Source
 		{
@@ -45,6 +46,7 @@ namespace Needs
 		std::array<std::string, kNeedCount>              currentNames;
 		std::vector<std::string>                         iconPaths;      // the mods' own (always hidden)
 		std::array<std::vector<std::string>, kNeedCount> needIconPaths;  // each need's (hidden while it's shown)
+		std::array<std::vector<std::string>, kNeedCount> needHuds;       // the SMF HUDs of the mod each need is read from
 		std::string                                      logged;         // the needs read, as the log last said
 		std::vector<std::array<int, kNeedCount>>         loggedOn;       // per source and need: last logged on (1) / off (0)
 
@@ -55,8 +57,7 @@ namespace Needs
 			Source        s;
 			s.name = j.value("name", a_file.stem().string());
 			const auto plugin = j.at("plugin").get<std::string>();
-			if (!RE::TESDataHandler::GetSingleton()->LookupModByName(plugin)) {
-				logs::info("{} needs: {} isn't loaded, skipped", s.name, plugin);
+			if (!PluginLoaded(j, plugin, s.name + " needs")) {
 				return std::nullopt;
 			}
 			logs::info("{} needs ({})", s.name, a_file.filename().string());
@@ -109,7 +110,10 @@ namespace Needs
 		std::array<std::string, kNeedCount>              names;
 		std::vector<std::string>                         paths;
 		std::array<std::vector<std::string>, kNeedCount> needPaths;
-		loggedOn.resize(sources.size(), std::array<int, kNeedCount>{ -1, -1, -1, -1, -1 });
+		std::array<std::vector<std::string>, kNeedCount> huds;
+		std::array<int, kNeedCount>                      unknown;
+		unknown.fill(-1);
+		loggedOn.resize(sources.size(), unknown);
 		for (std::size_t k = 0; k < sources.size(); ++k) {
 			auto&      source = sources[k];
 			const bool sourceOn = source.On();
@@ -128,6 +132,7 @@ namespace Needs
 					names[i] = source.name;
 					// the mod's own widget for this need, hidden only while our gauge shows it
 					source.needs[i]->hidden.Collect(source.name, needPaths[i]);
+					huds[i] = source.hidden.smfHuds;
 				}
 			}
 		}
@@ -147,6 +152,7 @@ namespace Needs
 		currentNames = std::move(names);
 		iconPaths = std::move(paths);
 		needIconPaths = std::move(needPaths);
+		needHuds = std::move(huds);
 	}
 
 	NeedReadings Current()
@@ -180,5 +186,17 @@ namespace Needs
 			}
 		}
 		return paths;
+	}
+
+	std::vector<std::string> SmfHuds(const std::array<bool, kNeedCount>& a_shown)
+	{
+		std::scoped_lock         l(lock);
+		std::vector<std::string> huds;
+		for (std::size_t i = 0; i < kNeedCount; ++i) {
+			if (a_shown[i]) {
+				huds.insert(huds.end(), needHuds[i].begin(), needHuds[i].end());
+			}
+		}
+		return huds;
 	}
 }

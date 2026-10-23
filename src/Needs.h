@@ -5,10 +5,11 @@ enum class Need : int
 	kHunger,
 	kThirst,
 	kFatigue,
-	kInebriation,  // Realistic Needs and Diseases
-	kWeight,       // ... the body's weight (muscular .. skinny)
+	kInebriation,  // Realistic Needs and Diseases, Last Seed
+	kWeight,       // Realistic Needs and Diseases: the body's weight (muscular .. skinny)
+	kVitality,     // Last Seed: the overall condition the other needs wear down (peak condition .. dying)
 };
-inline constexpr std::size_t kNeedCount = 5;
+inline constexpr std::size_t kNeedCount = 6;
 
 // What a stage on a need's gauge is like
 enum class NeedZone : std::uint8_t
@@ -57,4 +58,8 @@ namespace Needs
 
 	// HUD clips of the survival mods' own need icons (to hide): the mods' and those of the needs shown
 	std::vector<std::string> IconPaths(const std::array<bool, kNeedCount>& a_shown);
+
+	// SKSE plugins whose own SKSE Menu Framework HUD the gauges stand in for (Last Seed 2026): those of the mods a shown
+	// need is read from
+	std::vector<std::string> SmfHuds(const std::array<bool, kNeedCount>& a_shown);
 }

@@ -10,6 +10,7 @@
 #include "Needs.h"
 #include "NeedsGauge.h"
 #include "Settings.h"
+#include "SmfHuds.h"
 #include "Stress.h"
 #include "Temperature.h"
 #include "UI.h"
@@ -273,6 +274,20 @@ namespace UI
 			return paths;
 		}
 
+		// other mods' SKSE Menu Framework HUDs (Frostfall 2026's, Last Seed 2026's bars) the gauges stand in for
+		std::vector<std::string> HudsToHide(const Settings& s)
+		{
+			std::vector<std::string> huds;
+			if (s.enabled && s.hideVanillaIcon && s.visibility != Visibility::kNever) {
+				huds = Temperature::SmfHuds();
+			}
+			if (s.needs.enabled) {
+				const auto needs = Needs::SmfHuds(s.needs.show);
+				huds.insert(huds.end(), needs.begin(), needs.end());
+			}
+			return huds;
+		}
+
 		void DrawTemperature(const Settings& s, float dt, bool preview, bool gameplay, float hud)
 		{
 			auto        reading = Temperature::Current();
@@ -345,6 +360,7 @@ namespace UI
 			state.sampleTimer = kSampleInterval;
 			ScheduleSample(s.needs.enabled || preview, Stress::Available() && (s.stress.enabled || s.fear.enabled || preview));
 			HudIcons::Update(IconsToHide(s));
+			SmfHuds::Hide(HudsToHide(s));
 		}
 
 		const bool  gameplay = preview || InGameplay();
