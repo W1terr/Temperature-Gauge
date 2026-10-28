@@ -8,8 +8,10 @@ enum class Need : int
 	kInebriation,  // Realistic Needs and Diseases, Last Seed
 	kWeight,       // Realistic Needs and Diseases: the body's weight (muscular .. skinny)
 	kVitality,     // Last Seed: the overall condition the other needs wear down (peak condition .. dying)
+	kDirt,         // Dirt and Blood: recently washed .. covered in dirt
+	kBlood,        // Dirt and Blood: no blood .. covered in blood
 };
-inline constexpr std::size_t kNeedCount = 6;
+inline constexpr std::size_t kNeedCount = 8;
 
 // What a stage on a need's gauge is like
 enum class NeedZone : std::uint8_t

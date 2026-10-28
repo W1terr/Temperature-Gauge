@@ -242,5 +242,18 @@
 	"Healthy": "En bonne santé",
 	"Weakened": "Affaibli",
 	"Ruined": "Ruiné",
-	"Dying": "Mourant"
+	"Dying": "Mourant",
+	"Dirt": "Saleté",
+	"Blood": "Sang",
+	"Dirt and Blood: how dirty and how bloody your character is (washing, swimming and rain clean you)": "Dirt and Blood : à quel point votre personnage est sale et ensanglanté (se laver, nager et la pluie vous nettoient)",
+	"Recently washed": "Récemment lavé",
+	"Slightly Dirty": "Légèrement sale",
+	"Somewhat Dirty": "Assez sale",
+	"Quite Dirty": "Très sale",
+	"Covered in Dirt": "Couvert de saleté",
+	"No Blood": "Pas de sang",
+	"Bloodstains": "Taches de sang",
+	"Large Bloodstains": "Grandes taches de sang",
+	"Quite Bloody": "Très ensanglanté",
+	"Covered in Blood": "Couvert de sang"
 }

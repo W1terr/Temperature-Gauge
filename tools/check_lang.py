@@ -51,7 +51,7 @@ def code_keys() -> list[str]:
             if text:
                 add(text)
     # needs and stress definitions: the same for each meter's stage names and its bonus names
-    meters = [(path, need) for path in sorted((ROOT / "res").rglob("Needs/*.json")) for need in ("hunger", "thirst", "fatigue", "inebriation", "weight", "vitality")]
+    meters = [(path, need) for path in sorted((ROOT / "res").rglob("Needs/*.json")) for need in ("hunger", "thirst", "fatigue", "inebriation", "weight", "vitality", "dirt", "blood")]
     meters += [(path, "stress") for path in sorted((ROOT / "res").rglob("Stress/*.json"))]
     for path, key in meters:
         meter = json.loads(path.read_text(encoding="utf-8")).get(key, {})

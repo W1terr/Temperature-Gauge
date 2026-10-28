@@ -242,5 +242,18 @@
 	"Healthy": "健康",
 	"Weakened": "虛弱",
 	"Ruined": "垮掉",
-	"Dying": "垂死"
+	"Dying": "垂死",
+	"Dirt": "髒污",
+	"Blood": "血跡",
+	"Dirt and Blood: how dirty and how bloody your character is (washing, swimming and rain clean you)": "Dirt and Blood：角色有多髒、身上有多少血（洗澡、游泳和雨水能清洗乾淨）",
+	"Recently washed": "剛洗過",
+	"Slightly Dirty": "有點髒",
+	"Somewhat Dirty": "頗髒",
+	"Quite Dirty": "很髒",
+	"Covered in Dirt": "滿身污泥",
+	"No Blood": "沒有血跡",
+	"Bloodstains": "血漬",
+	"Large Bloodstains": "大片血漬",
+	"Quite Bloody": "滿是血跡",
+	"Covered in Blood": "渾身是血"
 }

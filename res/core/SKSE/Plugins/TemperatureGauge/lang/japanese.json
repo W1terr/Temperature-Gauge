@@ -242,5 +242,18 @@
 	"Healthy": "健康",
 	"Weakened": "衰弱",
 	"Ruined": "ボロボロ",
-	"Dying": "瀕死"
+	"Dying": "瀕死",
+	"Dirt": "汚れ",
+	"Blood": "血",
+	"Dirt and Blood: how dirty and how bloody your character is (washing, swimming and rain clean you)": "Dirt and Blood: キャラクターの汚れと血の量 (体を洗う、泳ぐ、雨で落ちます)",
+	"Recently washed": "洗ったばかり",
+	"Slightly Dirty": "少し汚れている",
+	"Somewhat Dirty": "やや汚れている",
+	"Quite Dirty": "かなり汚れている",
+	"Covered in Dirt": "泥まみれ",
+	"No Blood": "血なし",
+	"Bloodstains": "血痕",
+	"Large Bloodstains": "大きな血痕",
+	"Quite Bloody": "かなり血まみれ",
+	"Covered in Blood": "血まみれ"
 }

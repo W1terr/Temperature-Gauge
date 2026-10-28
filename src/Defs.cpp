@@ -139,6 +139,11 @@ namespace Defs
 		if (!anyOf.empty()) {
 			return std::ranges::any_of(anyOf, [](const Value& a_value) { return a_value.Holds(); }) ? 1.0f : 0.0f;
 		}
+		for (std::size_t i = 0; i < cases.size(); ++i) {
+			if (cases[i].Holds()) {
+				return caseValues[i];
+			}
+		}
 		if (playerWeight) {
 			const auto player = RE::PlayerCharacter::GetSingleton();
 			const auto base = player ? player->GetActorBase() : nullptr;
@@ -215,6 +220,13 @@ namespace Defs
 			for (const auto& v : a_json["anyOf"]) {
 				if (auto parsed = ParseValue(v, plugin); parsed.Valid()) {
 					value.anyOf.push_back(std::move(parsed));
+				}
+			}
+		} else if (a_json.contains("cases")) {
+			for (const auto& c : a_json["cases"]) {
+				if (auto when = ParseValue(c.at("when"), plugin); when.Valid()) {
+					value.cases.push_back(std::move(when));
+					value.caseValues.push_back(c.at("is").get<float>());
 				}
 			}
 		} else if (a_json.contains("playerWeight")) {

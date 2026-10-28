@@ -38,7 +38,7 @@ struct NeedsSettings
 	bool       enabled{ false };
 	Visibility visibility{ Visibility::kAlways };  // kNotComfortable: each need shows while it has penalties
 	float      hideDelay{ 4.0f };
-	std::array<bool, 6> show{ true, true, true, true, true, true };  // hunger, thirst, fatigue, inebriation, weight, vitality
+	std::array<bool, 8> show{ true, true, true, true, true, true, true, true };  // hunger, thirst, fatigue, inebriation, weight, vitality, dirt, blood
 
 	NeedStyle style{ NeedStyle::kRing };
 	bool      column{ false };  // stacked instead of side by side
@@ -70,12 +70,14 @@ struct NeedsSettings
 	RGBA bonus{ 0.98f, 0.84f, 0.38f, 1.0f };
 	RGBA track{ 0.0f, 0.0f, 0.0f, 0.45f };
 	RGBA icon{ 0.95f, 0.96f, 0.93f, 1.0f };
-	std::array<RGBA, 6> needColors{ { { 0.97f, 0.55f, 0.13f, 1.0f },     // hunger: orange
+	std::array<RGBA, 8> needColors{ { { 0.97f, 0.55f, 0.13f, 1.0f },     // hunger: orange
 		{ 0.13f, 0.40f, 0.96f, 1.0f },                                 // thirst: blue
 		{ 0.56f, 0.36f, 0.19f, 1.0f },                                 // fatigue: brown
 		{ 0.92f, 0.76f, 0.22f, 1.0f },                                 // inebriation: mead gold
 		{ 0.78f, 0.32f, 0.36f, 1.0f },                                 // weight: muscle red
-		{ 0.42f, 0.78f, 0.36f, 1.0f } } };                             // vitality: leaf green
+		{ 0.42f, 0.78f, 0.36f, 1.0f },                                 // vitality: leaf green
+		{ 0.52f, 0.47f, 0.32f, 1.0f },                                 // dirt: mud
+		{ 0.72f, 0.07f, 0.09f, 1.0f } } };                             // blood: dark red
 };
 
 // The stress gauge (Stress and Fear page) looks like one of the needs gauges and has the same settings; arcFlip

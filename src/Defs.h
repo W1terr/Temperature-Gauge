@@ -8,8 +8,10 @@ namespace Defs
 	// (auto properties: "::<name>_var"; add "alias": <alias id> for a script on one of the quest's aliases),
 	// { "questRunning": "<id>" } (1 while the quest runs), { "playerHasSpell": "<id>" } (1 while the player has the
 	// spell), { "effectActive": "<magic effect id>" } (1 while one of the player's effects of it works, its conditions
-	// met), { "anyOf": [ values ] } (1 while any of them holds) or { "playerWeight": true } (the character's body
-	// weight, 0 .. 100); any of them can add "plugin". "map": [[x, y], ...]
+	// met), { "anyOf": [ values ] } (1 while any of them holds), { "playerWeight": true } (the character's body
+	// weight, 0 .. 100) or { "cases": [ { "when": <value>, "is": <number> }, ... ] } (the number of the first case whose
+	// condition holds, none: can't be read; Dirt and Blood's stage = the stage spell the player has); any of them can
+	// add "plugin". "map": [[x, y], ...]
 	// turns what was read into another number, straight lines between the points (Frostbite's body temperature 1 =
 	// warm .. 0 = freezing as cold 0 .. 100: [[0, 100], [1, 0]]); "default": a number for while it can't be read (a
 	// script that hasn't started). As a condition it holds when > 0, or >= "atLeast" / < "below" if given (Frostfall's
@@ -25,6 +27,8 @@ namespace Defs
 		RE::EffectSetting*                   effect{ nullptr };
 		std::vector<Value>                   anyOf;
 		bool                                 playerWeight{ false };
+		std::vector<Value>                   cases;       // conditions ...
+		std::vector<float>                   caseValues;  // ... and the number of each
 		std::string                          script;
 		RE::BSFixedString                    variable;
 		std::vector<std::pair<float, float>> map;
@@ -32,7 +36,7 @@ namespace Defs
 		std::optional<float>                 atLeast;
 		std::optional<float>                 below;
 
-		bool Valid() const { return constant || global || quest || spell || effect || !anyOf.empty() || playerWeight; }
+		bool Valid() const { return constant || global || quest || spell || effect || !anyOf.empty() || playerWeight || !cases.empty(); }
 
 		std::optional<float> Get() const;
 		bool                 Holds() const;

@@ -242,5 +242,18 @@
 	"Healthy": "Здоров",
 	"Weakened": "Ослаблен",
 	"Ruined": "Разбит",
-	"Dying": "При смерти"
+	"Dying": "При смерти",
+	"Dirt": "Грязь",
+	"Blood": "Кровь",
+	"Dirt and Blood: how dirty and how bloody your character is (washing, swimming and rain clean you)": "Dirt and Blood: насколько ваш персонаж грязный и окровавленный (мытьё, плавание и дождь вас очищают)",
+	"Recently washed": "Недавно вымыт",
+	"Slightly Dirty": "Слегка грязный",
+	"Somewhat Dirty": "Довольно грязный",
+	"Quite Dirty": "Очень грязный",
+	"Covered in Dirt": "Весь в грязи",
+	"No Blood": "Без крови",
+	"Bloodstains": "Пятна крови",
+	"Large Bloodstains": "Большие пятна крови",
+	"Quite Bloody": "Сильно окровавлен",
+	"Covered in Blood": "Весь в крови"
 }

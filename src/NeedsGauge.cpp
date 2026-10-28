@@ -40,6 +40,8 @@ namespace UI
 			kBottle,
 			kDumbbell,
 			kHeart,
+			kSplat,
+			kDrops,
 		};
 
 		// one gauge of a group: what it shows and how
@@ -207,6 +209,36 @@ namespace UI
 			FillShape(a_list, pts, a_fill, a_outline, a_border);
 		}
 
+		// dirt: a splat of mud, a lumpy blob with a few flecks around it
+		void Splat(ImDrawList* a_list, ImVec2 a_c, float a_half, ImU32 a_fill, ImU32 a_outline, float a_border)
+		{
+			std::array<ImVec2, 42> pts;
+			for (std::size_t i = 0; i < pts.size(); ++i) {
+				const float a = 2.0f * kPi * static_cast<float>(i) / static_cast<float>(pts.size());
+				const float r = 0.55f + 0.11f * std::sin(5.0f * a + 0.6f) + 0.07f * std::sin(9.0f * a + 1.3f) + 0.05f * std::sin(2.0f * a + 2.0f);
+				pts[i] = ImVec2{ -0.06f, 0.06f } + ImVec2{ std::cos(a), std::sin(a) } * r;
+			}
+			Place(pts, a_c, a_half);
+			constexpr std::array<std::array<float, 3>, 3> kFlecks{ { { 0.74f, -0.66f, 0.13f }, { 0.86f, 0.30f, 0.09f },
+				{ -0.62f, 0.80f, 0.10f } } };  // x, y, radius
+			if (a_border > 0.0f) {
+				for (const auto& f : kFlecks) {
+					ImDrawListManager::AddCircleFilled(a_list, a_c + ImVec2{ f[0], f[1] } * a_half, f[2] * a_half + a_border, a_outline, 12);
+				}
+			}
+			FillShape(a_list, pts, a_fill, a_outline, a_border);
+			for (const auto& f : kFlecks) {
+				ImDrawListManager::AddCircleFilled(a_list, a_c + ImVec2{ f[0], f[1] } * a_half, f[2] * a_half, a_fill, 12);
+			}
+		}
+
+		// blood: a big drop and a small one beside it
+		void Drops(ImDrawList* a_list, ImVec2 a_c, float a_half, ImU32 a_fill, ImU32 a_outline, float a_border)
+		{
+			Drop(a_list, a_c + ImVec2{ -0.20f, 0.10f } * a_half, a_half * 0.84f, a_fill, a_outline, a_border);
+			Drop(a_list, a_c + ImVec2{ 0.62f, -0.40f } * a_half, a_half * 0.40f, a_fill, a_outline, a_border);
+		}
+
 		void Icon(MeterIcon a_icon, ImDrawList* a_list, ImVec2 a_c, float a_half, ImU32 a_fill, ImU32 a_outline, float a_border)
 		{
 			switch (a_icon) {
@@ -230,6 +262,12 @@ namespace UI
 				break;
 			case MeterIcon::kHeart:
 				Heart(a_list, a_c, a_half, a_fill, a_outline, a_border);
+				break;
+			case MeterIcon::kSplat:
+				Splat(a_list, a_c, a_half, a_fill, a_outline, a_border);
+				break;
+			case MeterIcon::kDrops:
+				Drops(a_list, a_c, a_half, a_fill, a_outline, a_border);
 				break;
 			}
 		}
@@ -278,8 +316,10 @@ namespace UI
 				{ "Sober", "Drunk", "Wasted" },
 				{ "Muscular", "Wiry", "Skinny" },
 				{ "Healthy", "Drained", "Dying" },
+				{ "Slightly Dirty", "Quite Dirty", "Covered in Dirt" },
+				{ "No Blood", "Bloodstains", "Covered in Blood" },
 			} };
-			constexpr std::array kFills{ 0.85f, 0.45f, 0.12f, 0.55f, 1.0f, 0.7f };
+			constexpr std::array kFills{ 0.85f, 0.45f, 0.12f, 0.55f, 1.0f, 0.7f, 0.65f, 0.75f };
 			NeedReadings         r;
 			for (std::size_t i = 0; i < kNeedCount; ++i) {
 				NeedReading n;
@@ -289,7 +329,8 @@ namespace UI
 				n.comfortable = n.fill > 0.6f;
 				n.danger = n.fill < 0.4f;
 				n.stage = Lang::T(kNames[i][n.comfortable ? 0 : n.danger ? 2 : 1]);
-				n.fillsUp = i == static_cast<std::size_t>(Need::kInebriation);
+				n.fillsUp = i == static_cast<std::size_t>(Need::kInebriation) || i == static_cast<std::size_t>(Need::kDirt) ||
+				            i == static_cast<std::size_t>(Need::kBlood);
 				if (i == static_cast<std::size_t>(Need::kWeight)) {
 					n.comfortable = true;
 					n.danger = false;
@@ -722,7 +763,7 @@ namespace UI
 
 		// needs the mod doesn't track (or that are switched off) leave no gap
 		static constexpr std::array kIcons{ MeterIcon::kApple, MeterIcon::kDrop, MeterIcon::kMoon, MeterIcon::kBottle, MeterIcon::kDumbbell,
-			MeterIcon::kHeart };
+			MeterIcon::kHeart, MeterIcon::kSplat, MeterIcon::kDrops };
 		std::array<Meter, kNeedCount> meters{};
 		std::size_t                   count = 0;
 		for (std::size_t i = 0; i < kNeedCount; ++i) {

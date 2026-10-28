@@ -1,0 +1,75 @@
+{
+	"name": "Dirt and Blood",
+	"description": "Shows how dirty (Recently Washed .. Covered in Dirt) and how bloody (Bloodstains .. Covered in Blood) your character is in Dirt and Blood - Dynamic Visual Effects, as two more gauges on the needs page.",
+	"plugin": "Dirt and Blood - Dynamic Visuals.esp",
+	"priority": 10,
+	"_": "The player has exactly one of the stage spells: Clean, Dirt 1..4 or Blood 1..4 (Blood N = dirt stage N with blood on top). None of them: the mod's player effects were never started (or are being restarted from its MCM).",
+	"dirt": {
+		"enabled": {
+			"anyOf": [
+				{ "playerHasSpell": "0x00080C" },
+				{ "playerHasSpell": "0x000806" }, { "playerHasSpell": "0x000807" }, { "playerHasSpell": "0x000808" }, { "playerHasSpell": "0x000838" },
+				{ "playerHasSpell": "0x000809" }, { "playerHasSpell": "0x00080A" }, { "playerHasSpell": "0x00080B" }, { "playerHasSpell": "0x000839" }
+			],
+			"_": "one of the stage spells below"
+		},
+		"value": {
+			"cases": [
+				{ "when": { "playerHasSpell": "0x00080C" }, "is": 0 },
+				{ "when": { "anyOf": [ { "playerHasSpell": "0x000806" }, { "playerHasSpell": "0x000809" } ] }, "is": 1 },
+				{ "when": { "anyOf": [ { "playerHasSpell": "0x000807" }, { "playerHasSpell": "0x00080A" } ] }, "is": 2 },
+				{ "when": { "anyOf": [ { "playerHasSpell": "0x000808" }, { "playerHasSpell": "0x00080B" } ] }, "is": 3 },
+				{ "when": { "anyOf": [ { "playerHasSpell": "0x000838" }, { "playerHasSpell": "0x000839" } ] }, "is": 4 }
+			],
+			"map": [ [ 0, 0 ], [ 1, 1.5 ], [ 2, 2.5 ], [ 3, 3.5 ], [ 4, 5 ] ],
+			"_": "stage 0 (Dirty_Spell_Clean) .. 4 (Dirty_Spell_Dirt4 / Blood4); mapped into the middle of its share of the gauge (clean = empty, covered = full)"
+		},
+		"max": 5,
+		"stages": [ 1, 2, 3, 4 ],
+		"stageNames": [
+			{ "spell": "0x00080C", "fallback": "Recently washed" },
+			{ "spell": "0x000806", "fallback": "Slightly Dirty" },
+			{ "spell": "0x000807", "fallback": "Somewhat Dirty" },
+			{ "spell": "0x000808", "fallback": "Quite Dirty" },
+			{ "spell": "0x000838", "fallback": "Covered in Dirt" }
+		],
+		"bonusStages": 1,
+		"comfortableStages": 3,
+		"dangerStage": 4,
+		"fillsUp": true,
+		"_": "washed: 5% better prices; stages 3 and 4 lower speech and disease resistance a little"
+	},
+	"blood": {
+		"enabled": {
+			"anyOf": [
+				{ "playerHasSpell": "0x00080C" },
+				{ "playerHasSpell": "0x000806" }, { "playerHasSpell": "0x000807" }, { "playerHasSpell": "0x000808" }, { "playerHasSpell": "0x000838" },
+				{ "playerHasSpell": "0x000809" }, { "playerHasSpell": "0x00080A" }, { "playerHasSpell": "0x00080B" }, { "playerHasSpell": "0x000839" }
+			]
+		},
+		"value": {
+			"cases": [
+				{ "when": { "playerHasSpell": "0x000809" }, "is": 1 },
+				{ "when": { "playerHasSpell": "0x00080A" }, "is": 2 },
+				{ "when": { "playerHasSpell": "0x00080B" }, "is": 3 },
+				{ "when": { "playerHasSpell": "0x000839" }, "is": 4 }
+			],
+			"default": 0,
+			"map": [ [ 0, 0 ], [ 1, 1.5 ], [ 2, 2.5 ], [ 3, 3.5 ], [ 4, 5 ] ],
+			"_": "Dirty_Spell_Blood1 .. 4, no blood spell = 0"
+		},
+		"max": 5,
+		"stages": [ 1, 2, 3, 4 ],
+		"stageNames": [
+			"No Blood",
+			{ "spell": "0x000809", "fallback": "Bloodstains" },
+			{ "spell": "0x00080A", "fallback": "Large Bloodstains" },
+			{ "spell": "0x00080B", "fallback": "Quite Bloody" },
+			{ "spell": "0x000839", "fallback": "Covered in Blood" }
+		],
+		"comfortableStages": 1,
+		"dangerStage": 4,
+		"fillsUp": true,
+		"_": "no meter of its own"
+	}
+}

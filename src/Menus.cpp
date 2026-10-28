@@ -7,7 +7,11 @@ namespace Menus
 		constexpr std::array kNames{ RE::MainMenu::MENU_NAME, RE::LoadingMenu::MENU_NAME, RE::FaderMenu::MENU_NAME,
 			RE::RaceSexMenu::MENU_NAME, RE::DialogueMenu::MENU_NAME, RE::MapMenu::MENU_NAME, RE::BookMenu::MENU_NAME,
 			RE::LockpickingMenu::MENU_NAME, RE::Console::MENU_NAME, RE::FavoritesMenu::MENU_NAME, RE::SleepWaitMenu::MENU_NAME,
-			RE::StatsMenu::MENU_NAME, RE::LevelUpMenu::MENU_NAME };
+			RE::StatsMenu::MENU_NAME, RE::LevelUpMenu::MENU_NAME,
+			// these pause the game, but not with Skyrim Souls RE (the game runs on behind them)
+			RE::TweenMenu::MENU_NAME, RE::InventoryMenu::MENU_NAME, RE::MagicMenu::MENU_NAME, RE::ContainerMenu::MENU_NAME,
+			RE::BarterMenu::MENU_NAME, RE::GiftMenu::MENU_NAME, RE::CraftingMenu::MENU_NAME, RE::JournalMenu::MENU_NAME,
+			RE::TrainingMenu::MENU_NAME, RE::TutorialMenu::MENU_NAME, RE::MessageBoxMenu::MENU_NAME };
 
 		std::array<std::atomic<bool>, kNames.size()> open{};
 

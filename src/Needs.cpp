@@ -11,8 +11,8 @@
 //   "replaces": "Survival Mode",              optional, definitions (by "name") left out while this one is loaded
 //   "priority": 10,                           with several mods running a need, the highest priority is shown
 //   "enabled": { "global": "0x02EB63" },      the mod runs (left out: always); a list = all of them
-//   "hunger": { ... },                        also "thirst", "fatigue", "inebriation", "weight" and "vitality", a meter
-//                                             each (see Meter.h); a need left out isn't in the mod
+//   "hunger": { ... },                        also "thirst", "fatigue", "inebriation", "weight", "vitality", "dirt" and
+//                                             "blood", a meter each (see Meter.h); a need left out isn't in the mod
 //   "hide": { "hudPaths": [ "_root..." ], "skyuiWidget": { "quest": "0x12BDC1", "script": "_SHWidgetScript" } }
 //                                             the mod's own need icons (skyuiWidget may be a list); "smfHud": its SKSE
 //                                             Menu Framework HUD (see SmfHuds.h), hidden while a need of it is shown
@@ -26,7 +26,8 @@ namespace Needs
 		using namespace Defs;
 
 		constexpr auto                                kFolder = "Data/SKSE/Plugins/TemperatureGauge/Needs";
-		constexpr std::array<const char*, kNeedCount> kKeys{ "hunger", "thirst", "fatigue", "inebriation", "weight", "vitality" };
+		constexpr std::array<const char*, kNeedCount> kKeys{ "hunger", "thirst", "fatigue", "inebriation", "weight", "vitality", "dirt",
+			"blood" };
 
 		struct Source
 		{

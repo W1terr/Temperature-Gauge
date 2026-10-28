@@ -174,7 +174,7 @@ namespace Config
 				if constexpr (std::is_enum_v<T>) {
 					a_value = static_cast<T>(it->get<int>());
 				} else if constexpr (requires { std::tuple_size<T>::value; typename T::value_type; }) {
-					// lists that grew (3 needs before 2.2, now 5): what the file has, the defaults for the rest
+					// lists that grew (3 needs before 2.2, now 8): what the file has, the defaults for the rest
 					for (std::size_t i = 0; i < std::min(a_value.size(), it->size()); ++i) {
 						a_value[i] = (*it)[i].template get<typename T::value_type>();
 					}

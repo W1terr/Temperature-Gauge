@@ -18,7 +18,8 @@ Frostfall's exposure meter and Frostfall 2026's bars, Frostbite's meter).
   fatigue, SunHelm, Realistic Needs and Diseases and Last Seed all three, RND also inebriation and weight (a bottle
   and a dumbbell), Last Seed also alcohol and vitality (a heart); their own need icons (Last Seed 2026's bars) are
   hidden while the gauges are on. Frostfall and Frostbite have no needs of their
-  own; next to them the gauges read the needs mod you run with them.
+  own; next to them the gauges read the needs mod you run with them. With Dirt and Blood - Dynamic Visual Effects:
+  dirt (a mud splat, recently washed .. covered in dirt) and blood (drops, bloodstains .. covered in blood) gauges.
 - With Stress and Fear - A Dynamic Sanity System: a Stress and Fear page with a stress gauge (ring, bar or arc, its
   stages from calm to critical combat stress) and a fear indicator (an eye and the phobia's name while you fight what
   you fear).
@@ -31,7 +32,7 @@ Frostfall's exposure meter and Frostfall 2026's bars, Frostbite's meter).
 - SKSE Menu Framework (3 or newer)
 - A supported survival mod: Survival Mode (Creation Club, built in), Survival Mode Improved - SKSE, Conner's Survival
   Mode, SunHelm Survival, Frostfall (also Frostfall 2026), Frostbite, Realistic Needs and Diseases or Last Seed (also
-  Last Seed 2026) (patches in the installer)
+  Last Seed 2026) (patches in the installer); Dirt and Blood - Dynamic Visual Effects for the dirt and blood gauges
 
 ## Credits
 

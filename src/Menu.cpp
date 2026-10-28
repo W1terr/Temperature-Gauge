@@ -217,7 +217,8 @@ namespace UI
 			const auto names = Needs::SourceNames();
 			const auto loaded = Needs::LoadedSources();
 			const auto readings = Needs::Current();
-			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue", "Inebriation", "Weight", "Vitality" };
+			static constexpr std::array<const char*, kNeedCount> kNeedNames{ "Hunger", "Thirst", "Fatigue", "Inebriation", "Weight", "Vitality",
+				"Dirt", "Blood" };
 			for (std::size_t i = 0; i < kNeedCount; ++i) {
 				if (readings[i]) {
 					Text("%s", std::format("{}: {} ({}, {:.0f}%)", T(kNeedNames[i]), T(readings[i]->stage.c_str()), names[i], readings[i]->fill * 100.0f).c_str());
@@ -337,6 +338,9 @@ namespace UI
 					Color("Weight", "needColorWeight", n.needColors[4]);
 					SameLine();
 					Color("Vitality", "needColorVitality", n.needColors[5]);
+					Color("Dirt", "needColorDirt", n.needColors[6]);
+					SameLine();
+					Color("Blood", "needColorBlood", n.needColors[7]);
 				}
 				SameLine();
 			} else {
@@ -394,6 +398,10 @@ namespace UI
 			SameLine();
 			Checkbox(Id("Vitality").c_str(), &n.show[5]);
 			Hint("Inebriation: Realistic Needs and Diseases, Last Seed. Weight: Realistic Needs and Diseases. Vitality: Last Seed.");
+			Checkbox(Id("Dirt").c_str(), &n.show[6]);
+			SameLine();
+			Checkbox(Id("Blood").c_str(), &n.show[7]);
+			Hint("Dirt and Blood: how dirty and how bloody your character is (washing, swimming and rain clean you)");
 			static constexpr std::array needsVisibilityNames{ "Always", "Only when not comfortable" };
 			SetNextItemWidth(260.0f);
 			EnumCombo("Show", n.visibility, needsVisibilityNames);

@@ -6,6 +6,7 @@ namespace Menus
 {
 	void Register();  // after the data is loaded, on the main thread
 
-	// a menu is open the gauge shouldn't be drawn over (dialogue, map, console...)
+	// a menu is open the gauge shouldn't be drawn over (dialogue, map, inventory, console...), also when it doesn't pause
+	// the game (Skyrim Souls RE)
 	bool HudCovered();
 }
