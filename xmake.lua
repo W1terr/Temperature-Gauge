@@ -15,7 +15,7 @@ add_requires("nlohmann_json")
 
 -- define targets
 target("TemperatureGauge")
-    set_version("3.2.0")
+    set_version("3.3.0")
     add_rules("commonlibsse-ng.plugin", {
         name = "TemperatureGauge",
         author = "W1ter",

@@ -1,0 +1,39 @@
+{
+	"name": "Starfrost",
+	"description": "Reads Starfrost - A Survival Overhaul (on top of Survival Mode Improved - SKSE): its hunger and fatigue with the stage values it sets, no penalties before Hungry / Tired, and its food buffs (Fed, Well Fed, Lover's Cooking) as the hunger bonus; and its temperature, no penalties before Cold. Shows readable names where Starfrost's stages are called \"Neutral State\".",
+	"plugin": "Starfrost.esp",
+	"replaces": [ "Survival Mode Improved", "Survival Mode" ],
+	"priority": 6,
+	"enabled": [
+		{ "global": "0x826", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ModeEnabled" },
+		{ "global": "0xD1E", "plugin": "SurvivalModeImproved.esp", "atLeast": 0, "_": "SMI_CurrentColdStage (-1 = stopped)" }
+	],
+	"cold": { "global": "0x81B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ColdNeedValue" },
+	"max": { "global": "0x84B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ColdNeedMaxValue" },
+	"stages": [
+		{ "global": "0xD20", "plugin": "SurvivalModeImproved.esp", "_": "cold stage 1 (Starfrost: 100)" },
+		{ "global": "0xD21", "plugin": "SurvivalModeImproved.esp", "_": "cold stage 2 (150)" },
+		{ "global": "0xD22", "plugin": "SurvivalModeImproved.esp", "_": "cold stage 3 (200)" },
+		{ "global": "0xD23", "plugin": "SurvivalModeImproved.esp", "_": "cold stage 4 (400)" },
+		{ "global": "0xD24", "plugin": "SurvivalModeImproved.esp", "_": "cold stage 5 (600)" }
+	],
+	"stageNames": [
+		{ "spell": "0x890", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Warm" },
+		"Comfortable",
+		"Chilly",
+		{ "spell": "0x86D", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Cold" },
+		{ "spell": "0x870", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Very Cold" },
+		{ "spell": "0x871", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Freezing" }
+	],
+	"_stageNames": "Starfrost names stages 1 and 2 \"Neutral State\" (no penalties)",
+	"comfortableStages": 3,
+	"dangerStage": 4,
+	"temperatureLevel": { "global": "0x2EDD", "plugin": "Update.esm", "_": "Survival_TemperatureLevel" },
+	"target": { "value": { "global": "0xD1D", "plugin": "SurvivalModeImproved.esp", "_": "SMI_CurrentAmbientTemp" }, "deadlyFrom": 600 },
+	"hide": {
+		"hudPaths": [
+			"_root.HUDMovieBaseInstance.TemperatureMeter_mc",
+			"_root.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass.CompassTemperatureHolderInstance"
+		]
+	}
+}

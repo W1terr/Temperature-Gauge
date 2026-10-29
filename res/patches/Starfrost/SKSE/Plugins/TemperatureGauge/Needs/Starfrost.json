@@ -1,0 +1,66 @@
+{
+	"name": "Starfrost",
+	"description": "Reads Starfrost - A Survival Overhaul (on top of Survival Mode Improved - SKSE): its hunger and fatigue with the stage values it sets, no penalties before Hungry / Tired, and its food buffs (Fed, Well Fed, Lover's Cooking) as the hunger bonus; and its temperature, no penalties before Cold. Shows readable names where Starfrost's stages are called \"Neutral State\".",
+	"plugin": "Starfrost.esp",
+	"replaces": [ "Survival Mode Improved", "Survival Mode" ],
+	"priority": 6,
+	"enabled": { "global": "0x826", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ModeEnabled" },
+	"hunger": {
+		"enabled": { "global": "0xA14", "plugin": "SurvivalModeImproved.esp", "atLeast": 0, "_": "SMI_CurrentHungerStage (-1 = stopped)" },
+		"value": { "global": "0x81A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerNeedValue (Starfrost: 0 .. 120)" },
+		"max": { "global": "0x80C", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerNeedMaxValue" },
+		"stages": [
+			{ "global": "0x806", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage1Value (Starfrost: 1)" },
+			{ "global": "0x802", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage2Value (10)" },
+			{ "global": "0x803", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage3Value (20)" },
+			{ "global": "0x804", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage4Value (60)" },
+			{ "global": "0x805", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_HungerStage5Value (120)" }
+		],
+		"stageNames": [
+			"Full",
+			"Satisfied",
+			"Peckish",
+			{ "spell": "0x881", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Hungry" },
+			{ "spell": "0x886", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Very Hungry" },
+			{ "spell": "0x885", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Starving" }
+		],
+		"_stageNames": "Starfrost names stages 0 .. 2 \"Not Hungry State\" / \"Neutral State\" (no penalties)",
+		"comfortableStages": 3,
+		"dangerStage": 4,
+		"bonus": [
+			{ "when": { "playerHasSpell": "0x817" }, "name": { "spell": "0x817", "fallback": "Lover's Cooking" } },
+			{ "when": { "playerHasSpell": "0x813" }, "name": { "spell": "0x813", "fallback": "Well Fed" } },
+			{ "when": { "playerHasSpell": "0x80E" }, "name": { "spell": "0x80E", "fallback": "Fed" } },
+			{ "when": { "playerHasSpell": "0x83C" }, "name": { "spell": "0x83C", "fallback": "Fed" } }
+		],
+		"_bonus": "food buffs added while a meal's effect lasts (hunger doesn't grow meanwhile): MAG_FedMarriageSpell, MAG_FedWellSpell, MAG_FedSpell, MAG_FedVampireSpell"
+	},
+	"fatigue": {
+		"enabled": { "global": "0xA1C", "plugin": "SurvivalModeImproved.esp", "atLeast": 0, "_": "SMI_CurrentExhaustionStage (-1 = stopped)" },
+		"value": { "global": "0x816", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ExhaustionNeedValue (Starfrost: 0 .. 600)" },
+		"max": { "global": "0x84A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "_": "Survival_ExhaustionNeedMaxValue" },
+		"stages": [
+			{ "global": "0xA17", "plugin": "SurvivalModeImproved.esp", "_": "exhaustion stage 1 (Starfrost: 200)" },
+			{ "global": "0xA18", "plugin": "SurvivalModeImproved.esp", "_": "exhaustion stage 2 (250)" },
+			{ "global": "0xA19", "plugin": "SurvivalModeImproved.esp", "_": "exhaustion stage 3 (300)" },
+			{ "global": "0xA1A", "plugin": "SurvivalModeImproved.esp", "_": "exhaustion stage 4 (450)" },
+			{ "global": "0xA1B", "plugin": "SurvivalModeImproved.esp", "_": "exhaustion stage 5 (600)" }
+		],
+		"stageNames": [
+			{ "spell": "0x0FB981", "plugin": "Skyrim.esm", "fallback": "Rested" },
+			"Refreshed",
+			"Drained",
+			{ "spell": "0x87A", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Tired" },
+			{ "spell": "0x87B", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Very Tired" },
+			{ "spell": "0x87D", "plugin": "ccQDRSSE001-SurvivalMode.esl", "fallback": "Exhausted" }
+		],
+		"_stageNames": "Starfrost names stages 1 and 2 \"Neutral State\" (no penalties)",
+		"bonusStages": 1,
+		"comfortableStages": 3,
+		"dangerStage": 4,
+		"bonus": [
+			{ "when": { "playerHasSpell": "0x0CDA1D", "plugin": "Skyrim.esm" }, "name": { "spell": "0x0CDA1D", "plugin": "Skyrim.esm", "fallback": "Lover's Comfort" } },
+			{ "when": { "playerHasSpell": "0x0FB984", "plugin": "Skyrim.esm" }, "name": { "spell": "0x0FB984", "plugin": "Skyrim.esm", "fallback": "Well Rested" } }
+		]
+	}
+}
